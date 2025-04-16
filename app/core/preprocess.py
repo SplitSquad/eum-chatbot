@@ -19,28 +19,6 @@ Return the result ONLY in this JSON format:
 }}
 Query: "{query}" """
 
-# app/core/preprocess.py
-
-import httpx
-from typing import Dict
-import json
-
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "gemma3:12b"  # 또는 mistral, llama3 등
-
-PROMPT_TEMPLATE = """
-Detect the language of the following query, then translate it to English.
-
-Return the result ONLY in this JSON format:
-
-```json
-{{
-  "translated_query": "...",
-  "lang_code": "..."
-}}
-Query: "{query}" """
-
-
 async def translate_query(query: str) -> Dict[str, str]:
     """
     주어진 쿼리를 영어로 번역하고 언어 코드를 반환합니다.
@@ -62,7 +40,7 @@ async def translate_query(query: str) -> Dict[str, str]:
         "stream": False,
     }
 
-    with httpx.Client() as client:
+    async with httpx.AsyncClient() as client:
         response = await client.post(OLLAMA_URL, json=payload)
         response.raise_for_status()
         result = response.json()["response"]
