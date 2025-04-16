@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Dict
 from app.core.preprocess import translate_query
-from app.core.classify_chatbot import classify_agentic_query
+from app.core.classify_chatbot import classify_domain_query
 
 router = APIRouter(prefix="/agentic", tags=["Agentic"])
 
@@ -18,7 +18,7 @@ async def agentic_handler(payload: AgenticRequest) -> Dict:
     english_query = translated["translated_query"]
     lang_code = translated["lang_code"]
 
-    agentic_result = await classify_agentic_query(english_query)
+    agentic_result = await classify_domain_query(english_query)
 
     return {
         "response": "agentic_classification",
