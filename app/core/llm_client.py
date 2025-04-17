@@ -21,10 +21,16 @@ class BaseLLMClient(ABC):
 class OllamaClient(BaseLLMClient):
     """Ollama API 클라이언트"""
     
-    def __init__(self):
-        self.base_url = settings.OLLAMA_URL
-        self.model = settings.OLLAMA_MODEL
-        self.timeout = settings.OLLAMA_TIMEOUT
+    def __init__(self, is_lightweight: bool = True):
+        self.is_lightweight = is_lightweight
+        if is_lightweight:
+            self.base_url = settings.LIGHTWEIGHT_OLLAMA_URL
+            self.model = settings.LIGHTWEIGHT_OLLAMA_MODEL
+            self.timeout = settings.LIGHTWEIGHT_OLLAMA_TIMEOUT
+        else:
+            self.base_url = settings.HIGH_PERFORMANCE_OLLAMA_URL
+            self.model = settings.HIGH_PERFORMANCE_OLLAMA_MODEL
+            self.timeout = settings.HIGH_PERFORMANCE_OLLAMA_TIMEOUT
         self.generate_url = f"{self.base_url}/api/generate"
         self.tags_url = f"{self.base_url}/api/tags"
     
@@ -36,11 +42,13 @@ class OllamaClient(BaseLLMClient):
                 response = await client.get(self.tags_url)
                 response.raise_for_status()
                 elapsed = time.time() - start_time
-                logger.info(f"[Ollama] 연결 확인 시간: {elapsed:.2f}초")
+                model_type = "경량" if self.is_lightweight else "고성능"
+                logger.info(f"[Ollama {model_type}] 연결 확인 시간: {elapsed:.2f}초")
                 return True
         except Exception as e:
             elapsed = time.time() - start_time
-            logger.error(f"[Ollama] 서버 연결 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[Ollama {model_type}] 서버 연결 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
             return False
     
     async def generate(self, prompt: str, **kwargs) -> str:
@@ -58,34 +66,44 @@ class OllamaClient(BaseLLMClient):
                 request_start = time.time()
                 response = await client.post(self.generate_url, json=payload)
                 request_time = time.time() - request_start
-                logger.info(f"[Ollama] API 요청 시간: {request_time:.2f}초")
+                model_type = "경량" if self.is_lightweight else "고성능"
+                logger.info(f"[Ollama {model_type}] API 요청 시간: {request_time:.2f}초")
                 
                 response.raise_for_status()
                 result = response.json()["response"]
                 
                 total_time = time.time() - start_time
-                logger.info(f"[Ollama] 전체 생성 시간: {total_time:.2f}초")
+                logger.info(f"[Ollama {model_type}] 전체 생성 시간: {total_time:.2f}초")
                 return result
         except httpx.TimeoutException as e:
             elapsed = time.time() - start_time
-            logger.error(f"[Ollama] 요청 타임아웃: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[Ollama {model_type}] 요청 타임아웃: {str(e)} (소요 시간: {elapsed:.2f}초)")
             raise TimeoutError(f"Ollama 서버 응답 시간 초과 (타임아웃: {self.timeout}초)")
         except httpx.RequestError as e:
             elapsed = time.time() - start_time
-            logger.error(f"[Ollama] 요청 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[Ollama {model_type}] 요청 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
             raise ConnectionError(f"Ollama 서버 요청 실패: {str(e)}")
         except Exception as e:
             elapsed = time.time() - start_time
-            logger.error(f"[Ollama] 예상치 못한 오류: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[Ollama {model_type}] 예상치 못한 오류: {str(e)} (소요 시간: {elapsed:.2f}초)")
             raise ValueError(f"Ollama 처리 중 오류 발생: {str(e)}")
 
 class OpenAIClient(BaseLLMClient):
     """OpenAI API 클라이언트"""
     
-    def __init__(self):
-        self.api_key = settings.OPENAI_API_KEY
-        self.model = settings.OPENAI_MODEL
-        self.timeout = settings.OPENAI_TIMEOUT
+    def __init__(self, is_lightweight: bool = True):
+        self.is_lightweight = is_lightweight
+        if is_lightweight:
+            self.api_key = settings.LIGHTWEIGHT_OPENAI_API_KEY
+            self.model = settings.LIGHTWEIGHT_OPENAI_MODEL
+            self.timeout = settings.LIGHTWEIGHT_OPENAI_TIMEOUT
+        else:
+            self.api_key = settings.HIGH_PERFORMANCE_OPENAI_API_KEY
+            self.model = settings.HIGH_PERFORMANCE_OPENAI_MODEL
+            self.timeout = settings.HIGH_PERFORMANCE_OPENAI_TIMEOUT
         self.base_url = "https://api.openai.com/v1"
         
         if not self.api_key:
@@ -100,11 +118,13 @@ class OpenAIClient(BaseLLMClient):
                 response = await client.get(f"{self.base_url}/models", headers=headers)
                 response.raise_for_status()
                 elapsed = time.time() - start_time
-                logger.info(f"[OpenAI] 연결 확인 시간: {elapsed:.2f}초")
+                model_type = "경량" if self.is_lightweight else "고성능"
+                logger.info(f"[OpenAI {model_type}] 연결 확인 시간: {elapsed:.2f}초")
                 return True
         except Exception as e:
             elapsed = time.time() - start_time
-            logger.error(f"[OpenAI] 서버 연결 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[OpenAI {model_type}] 서버 연결 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
             return False
     
     async def generate(self, prompt: str, **kwargs) -> str:
@@ -130,32 +150,43 @@ class OpenAIClient(BaseLLMClient):
                     json=payload
                 )
                 request_time = time.time() - request_start
-                logger.info(f"[OpenAI] API 요청 시간: {request_time:.2f}초")
+                model_type = "경량" if self.is_lightweight else "고성능"
+                logger.info(f"[OpenAI {model_type}] API 요청 시간: {request_time:.2f}초")
                 
                 response.raise_for_status()
                 result = response.json()["choices"][0]["message"]["content"]
                 
                 total_time = time.time() - start_time
-                logger.info(f"[OpenAI] 전체 생성 시간: {total_time:.2f}초")
+                logger.info(f"[OpenAI {model_type}] 전체 생성 시간: {total_time:.2f}초")
                 return result
         except httpx.TimeoutException as e:
             elapsed = time.time() - start_time
-            logger.error(f"[OpenAI] 요청 타임아웃: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[OpenAI {model_type}] 요청 타임아웃: {str(e)} (소요 시간: {elapsed:.2f}초)")
             raise TimeoutError(f"OpenAI 서버 응답 시간 초과 (타임아웃: {self.timeout}초)")
         except httpx.RequestError as e:
             elapsed = time.time() - start_time
-            logger.error(f"[OpenAI] 요청 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[OpenAI {model_type}] 요청 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
             raise ConnectionError(f"OpenAI 서버 요청 실패: {str(e)}")
         except Exception as e:
             elapsed = time.time() - start_time
-            logger.error(f"[OpenAI] 예상치 못한 오류: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[OpenAI {model_type}] 예상치 못한 오류: {str(e)} (소요 시간: {elapsed:.2f}초)")
             raise ValueError(f"OpenAI 처리 중 오류 발생: {str(e)}")
 
-def get_llm_client() -> BaseLLMClient:
-    """설정된 LLM 프로바이더에 따라 적절한 클라이언트를 반환합니다."""
-    if settings.LLM_PROVIDER == "ollama":
-        return OllamaClient()
-    elif settings.LLM_PROVIDER == "openai":
-        return OpenAIClient()
+def get_llm_client(is_lightweight: bool = True) -> BaseLLMClient:
+    """
+    설정된 LLM 프로바이더에 따라 적절한 클라이언트를 반환합니다.
+    
+    Args:
+        is_lightweight (bool): 경량 모델 사용 여부 (기본값: True)
+    """
+    provider = settings.LIGHTWEIGHT_LLM_PROVIDER if is_lightweight else settings.HIGH_PERFORMANCE_LLM_PROVIDER
+    
+    if provider == "ollama":
+        return OllamaClient(is_lightweight=is_lightweight)
+    elif provider == "openai":
+        return OpenAIClient(is_lightweight=is_lightweight)
     else:
-        raise ValueError(f"지원하지 않는 LLM 프로바이더: {settings.LLM_PROVIDER}") 
+        raise ValueError(f"지원하지 않는 LLM 프로바이더: {provider}") 
