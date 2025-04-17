@@ -1,84 +1,83 @@
 # app/core/classify_agentic.py
 
-from typing import Dict
 import json
 import time
 from loguru import logger
 from app.core.llm_client import get_llm_client
 
-AGENTIC_PROMPT_TEMPLATE = """
-You're an agent classifier. Given the user query, determine whether it requires an agentic action,
-what kind of agent is needed (e.g., booking, consultation, callback), and whether a professional-level answer is required.
-
-Return in this **exact** JSON format:
-
-```json
-{{
-  "needs_agent": true/false,
-  "agent_type": "none" or "booking" or "consultation" or "callback",
-  "requires_expert": true/false
-}}
-Query: "{query}" """
-
-async def classify_agentic_query(query: str) -> Dict[str, str]:
+async def classify_agentic_query(query: str) -> dict:
     """
-    주어진 쿼리가 에이전트 능력이 필요한지 분류합니다.
-
+    사용자의 쿼리를 에이전트성 쿼리로 분류합니다.
+    
     Args:
-        query (str): 분류할 쿼리문장
-
+        query (str): 사용자의 쿼리
+        
     Returns:
-        Dict[str, str]: 분류 결과를 포함한 딕셔너리
-
-    Raises:
-        ConnectionError: LLM 서버 연결 실패 시
-        TimeoutError: 요청 타임아웃 시
-        ValueError: 응답 파싱 실패 시
+        dict: 분류 결과
     """
     start_time = time.time()
-    logger.info(f"[Agentic 분류기] 입력 쿼리: {query}")
-    
-    # LLM 클라이언트 초기화
-    llm_client = get_llm_client()
-    init_time = time.time()
-    logger.info(f"[Agentic 분류기] 클라이언트 초기화 시간: {init_time - start_time:.2f}초")
-    
-    # 서버 연결 확인
-    connection_start = time.time()
-    if not await llm_client.check_connection():
-        raise ConnectionError("LLM 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인하세요.")
-    connection_time = time.time() - connection_start
-    logger.info(f"[Agentic 분류기] 서버 연결 확인 시간: {connection_time:.2f}초")
     
     try:
-        # LLM 요청 및 응답 처리
-        generate_start = time.time()
-        result = await llm_client.generate(
-            prompt=AGENTIC_PROMPT_TEMPLATE.format(query=query)
-        )
-        generate_time = time.time() - generate_start
-        logger.info(f"[Agentic 분류기] LLM 생성 시간: {generate_time:.2f}초")
-        logger.debug(f"[Agentic 분류기] 원본 응답: {result}")
-
+        # 경량 모델 클라이언트 초기화
+        init_start = time.time()
+        llm_client = get_llm_client(is_lightweight=True)
+        init_time = time.time() - init_start
+        logger.info(f"[Agentic] 클라이언트 초기화 시간: {init_time:.2f}초")
+        
+        # 서버 연결 확인
+        conn_start = time.time()
+        if not await llm_client.check_connection():
+            raise ConnectionError("LLM 서버 연결 실패")
+        conn_time = time.time() - conn_start
+        logger.info(f"[Agentic] 서버 연결 확인 시간: {conn_time:.2f}초")
+        
+        # 프롬프트 생성
+        prompt = f"""
+        다음 쿼리를 분석하여 에이전트성 쿼리인지 분류해주세요.
+        에이전트성 쿼리는 사용자가 특정 작업을 수행하도록 요청하는 쿼리입니다.
+        
+        쿼리: {query}
+        
+        JSON 형식으로 응답해주세요:
+        {{
+            "is_agentic": boolean,  // 에이전트성 쿼리 여부
+            "confidence": float,    // 분류 신뢰도 (0.0 ~ 1.0)
+            "reason": string        // 분류 이유
+        }}
+        """
+        
+        # LLM 응답 생성
+        gen_start = time.time()
+        response = await llm_client.generate(prompt)
+        gen_time = time.time() - gen_start
+        logger.info(f"[Agentic] LLM 생성 시간: {gen_time:.2f}초")
+        
         # JSON 파싱
         parse_start = time.time()
-        json_str = result.strip().strip("```json").strip("```").strip()
-        logger.debug(f"[Agentic 분류기] 파싱된 JSON 문자열: {json_str}")
-
-        parsed_result = json.loads(json_str)
+        try:
+            result = json.loads(response)
+        except json.JSONDecodeError as e:
+            logger.error(f"[Agentic] JSON 파싱 실패: {str(e)}")
+            logger.error(f"[Agentic] 원본 응답: {response}")
+            raise ValueError(f"LLM 응답 파싱 실패: {str(e)}")
         parse_time = time.time() - parse_start
-        logger.info(f"[Agentic 분류기] JSON 파싱 시간: {parse_time:.2f}초")
-        logger.info(f"[Agentic 분류기] 최종 분류 결과: {json.dumps(parsed_result, ensure_ascii=False)}")
+        logger.info(f"[Agentic] JSON 파싱 시간: {parse_time:.2f}초")
+        
+        # 결과 검증
+        if not isinstance(result, dict):
+            raise ValueError("LLM 응답이 올바른 JSON 형식이 아닙니다.")
+        
+        required_fields = ["is_agentic", "confidence", "reason"]
+        for field in required_fields:
+            if field not in result:
+                raise ValueError(f"LLM 응답에 필수 필드 '{field}'가 없습니다.")
         
         total_time = time.time() - start_time
-        logger.info(f"[Agentic 분류기] 총 실행 시간: {total_time:.2f}초")
+        logger.info(f"[Agentic] 전체 실행 시간: {total_time:.2f}초")
         
-        return parsed_result
-    except json.JSONDecodeError as e:
-        logger.error(f"[Agentic 분류기] JSON 파싱 실패: {str(e)}")
-        logger.error(f"[Agentic 분류기] 원본 응답: {result}")
-        raise ValueError(f"응답 JSON 파싱 실패: {str(e)}")
+        return result
+        
     except Exception as e:
-        logger.error(f"[Agentic 분류기] 예상치 못한 오류: {str(e)}")
-        logger.error(f"[Agentic 분류기] 원본 응답: {result}")
-        raise ValueError(f"처리 중 오류 발생: {str(e)}")
+        elapsed = time.time() - start_time
+        logger.error(f"[Agentic] 예상치 못한 오류: {str(e)} (소요 시간: {elapsed:.2f}초)")
+        raise
