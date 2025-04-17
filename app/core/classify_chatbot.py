@@ -4,6 +4,7 @@
 
 from typing import Dict
 import json
+import time
 from loguru import logger
 from app.core.llm_client import get_llm_client
 
@@ -58,27 +59,51 @@ async def classify_domain_query(query: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: 분류 결과를 포함한 딕셔너리
     """
+    start_time = time.time()
+    
     try:
-        # LLM 클라이언트 초기화
-        llm_client = get_llm_client()
+        # 경량 모델 클라이언트 초기화
+        init_start = time.time()
+        llm_client = get_llm_client(is_lightweight=True)
+        init_time = time.time() - init_start
+        logger.info(f"[Domain] 클라이언트 초기화 시간: {init_time:.2f}초")
+        
+        # 서버 연결 확인
+        conn_start = time.time()
+        if not await llm_client.check_connection():
+            raise ConnectionError("LLM 서버 연결 실패")
+        conn_time = time.time() - conn_start
+        logger.info(f"[Domain] 서버 연결 확인 시간: {conn_time:.2f}초")
         
         # 도메인 분류 요청
+        gen_start = time.time()
         result = await llm_client.generate(
             prompt=DOMAIN_PROMPT_TEMPLATE.format(query=query)
         )
+        gen_time = time.time() - gen_start
+        logger.info(f"[Domain] LLM 생성 시간: {gen_time:.2f}초")
         
         # JSON 추출 및 처리
+        parse_start = time.time()
         json_str = result.strip().strip("```json").strip("```").strip()
-        logger.debug(f"[도메인 분류기] 응답: {json_str}")
+        logger.debug(f"[Domain] 응답: {json_str}")
         
-        return json.loads(json_str)
+        data = json.loads(json_str)
+        parse_time = time.time() - parse_start
+        logger.info(f"[Domain] JSON 파싱 시간: {parse_time:.2f}초")
+        
+        total_time = time.time() - start_time
+        logger.info(f"[Domain] 전체 실행 시간: {total_time:.2f}초")
+        
+        return data
     except json.JSONDecodeError as e:
-        logger.error(f"[도메인 분류기] JSON 파싱 실패: {str(e)}")
-        logger.error(f"[도메인 분류기] 원본 응답: {result}")
-        raise ValueError(f"[도메인 분류기] 파싱 오류: {e}\n원본 응답: {result}")
+        logger.error(f"[Domain] JSON 파싱 실패: {str(e)}")
+        logger.error(f"[Domain] 원본 응답: {result}")
+        raise ValueError(f"[Domain] 파싱 오류: {e}\n원본 응답: {result}")
     except Exception as e:
-        logger.error(f"[도메인 분류기] 처리 중 오류 발생: {str(e)}")
-        raise ValueError(f"[도메인 분류기] 처리 중 오류 발생: {str(e)}")
+        elapsed = time.time() - start_time
+        logger.error(f"[Domain] 처리 중 오류 발생: {str(e)} (소요 시간: {elapsed:.2f}초)")
+        raise ValueError(f"[Domain] 처리 중 오류 발생: {str(e)}")
 
 async def classify_agentic_query(query: str) -> Dict[str, str]:
     """
@@ -90,27 +115,51 @@ async def classify_agentic_query(query: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: 분류 결과를 포함한 딕셔너리
     """
+    start_time = time.time()
+    
     try:
-        # LLM 클라이언트 초기화
-        llm_client = get_llm_client()
+        # 경량 모델 클라이언트 초기화
+        init_start = time.time()
+        llm_client = get_llm_client(is_lightweight=True)
+        init_time = time.time() - init_start
+        logger.info(f"[Agentic] 클라이언트 초기화 시간: {init_time:.2f}초")
+        
+        # 서버 연결 확인
+        conn_start = time.time()
+        if not await llm_client.check_connection():
+            raise ConnectionError("LLM 서버 연결 실패")
+        conn_time = time.time() - conn_start
+        logger.info(f"[Agentic] 서버 연결 확인 시간: {conn_time:.2f}초")
         
         # 에이전트 분류 요청
+        gen_start = time.time()
         result = await llm_client.generate(
             prompt=AGENTIC_PROMPT_TEMPLATE.format(query=query)
         )
+        gen_time = time.time() - gen_start
+        logger.info(f"[Agentic] LLM 생성 시간: {gen_time:.2f}초")
         
         # JSON 추출 및 처리
+        parse_start = time.time()
         json_str = result.strip().strip("```json").strip("```").strip()
-        logger.debug(f"[에이전트 분류기] 응답: {json_str}")
+        logger.debug(f"[Agentic] 응답: {json_str}")
         
-        return json.loads(json_str)
+        data = json.loads(json_str)
+        parse_time = time.time() - parse_start
+        logger.info(f"[Agentic] JSON 파싱 시간: {parse_time:.2f}초")
+        
+        total_time = time.time() - start_time
+        logger.info(f"[Agentic] 전체 실행 시간: {total_time:.2f}초")
+        
+        return data
     except json.JSONDecodeError as e:
-        logger.error(f"[에이전트 분류기] JSON 파싱 실패: {str(e)}")
-        logger.error(f"[에이전트 분류기] 원본 응답: {result}")
-        raise ValueError(f"[에이전트 분류기] 파싱 오류: {e}\n원본 응답: {result}")
+        logger.error(f"[Agentic] JSON 파싱 실패: {str(e)}")
+        logger.error(f"[Agentic] 원본 응답: {result}")
+        raise ValueError(f"[Agentic] 파싱 오류: {e}\n원본 응답: {result}")
     except Exception as e:
-        logger.error(f"[에이전트 분류기] 처리 중 오류 발생: {str(e)}")
-        raise ValueError(f"[에이전트 분류기] 처리 중 오류 발생: {str(e)}")
+        elapsed = time.time() - start_time
+        logger.error(f"[Agentic] 처리 중 오류 발생: {str(e)} (소요 시간: {elapsed:.2f}초)")
+        raise ValueError(f"[Agentic] 처리 중 오류 발생: {str(e)}")
 
 async def classify_specialized_query(query: str) -> Dict[str, str]:
     """
@@ -122,24 +171,48 @@ async def classify_specialized_query(query: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: 분류 결과를 포함한 딕셔너리
     """
+    start_time = time.time()
+    
     try:
-        # LLM 클라이언트 초기화
-        llm_client = get_llm_client()
+        # 경량 모델 클라이언트 초기화
+        init_start = time.time()
+        llm_client = get_llm_client(is_lightweight=True)
+        init_time = time.time() - init_start
+        logger.info(f"[Specialized] 클라이언트 초기화 시간: {init_time:.2f}초")
+        
+        # 서버 연결 확인
+        conn_start = time.time()
+        if not await llm_client.check_connection():
+            raise ConnectionError("LLM 서버 연결 실패")
+        conn_time = time.time() - conn_start
+        logger.info(f"[Specialized] 서버 연결 확인 시간: {conn_time:.2f}초")
         
         # 전문 분류 요청
+        gen_start = time.time()
         result = await llm_client.generate(
             prompt=SPECIALIZED_PROMPT_TEMPLATE.format(query=query)
         )
+        gen_time = time.time() - gen_start
+        logger.info(f"[Specialized] LLM 생성 시간: {gen_time:.2f}초")
         
         # JSON 추출 및 처리
+        parse_start = time.time()
         json_str = result.strip().strip("```json").strip("```").strip()
-        logger.debug(f"[전문 분류기] 응답: {json_str}")
+        logger.debug(f"[Specialized] 응답: {json_str}")
         
-        return json.loads(json_str)
+        data = json.loads(json_str)
+        parse_time = time.time() - parse_start
+        logger.info(f"[Specialized] JSON 파싱 시간: {parse_time:.2f}초")
+        
+        total_time = time.time() - start_time
+        logger.info(f"[Specialized] 전체 실행 시간: {total_time:.2f}초")
+        
+        return data
     except json.JSONDecodeError as e:
-        logger.error(f"[전문 분류기] JSON 파싱 실패: {str(e)}")
-        logger.error(f"[전문 분류기] 원본 응답: {result}")
-        raise ValueError(f"[전문 분류기] 파싱 오류: {e}\n원본 응답: {result}")
+        logger.error(f"[Specialized] JSON 파싱 실패: {str(e)}")
+        logger.error(f"[Specialized] 원본 응답: {result}")
+        raise ValueError(f"[Specialized] 파싱 오류: {e}\n원본 응답: {result}")
     except Exception as e:
-        logger.error(f"[전문 분류기] 처리 중 오류 발생: {str(e)}")
-        raise ValueError(f"[전문 분류기] 처리 중 오류 발생: {str(e)}")
+        elapsed = time.time() - start_time
+        logger.error(f"[Specialized] 처리 중 오류 발생: {str(e)} (소요 시간: {elapsed:.2f}초)")
+        raise ValueError(f"[Specialized] 처리 중 오류 발생: {str(e)}")
