@@ -2,10 +2,10 @@
 
 # app/core/classify_chatbot.py
 
-import httpx
 from typing import Dict
 import json
-from app.core.config import OLLAMA_URL, MODEL_NAME
+from loguru import logger
+from app.core.llm_client import get_llm_client
 
 DOMAIN_PROMPT_TEMPLATE = """
 You're a query classifier. Classify the query into whether it needs a specialized RAG (Retrieval-Augmented Generation),
@@ -58,23 +58,27 @@ async def classify_domain_query(query: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: 분류 결과를 포함한 딕셔너리
     """
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": DOMAIN_PROMPT_TEMPLATE.format(query=query),
-        "stream": False,
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.post(OLLAMA_URL, json=payload)
-        response.raise_for_status()
-        result = response.json()["response"]
-
-    json_str = result.strip().strip("```json").strip("```").strip()
-
     try:
+        # LLM 클라이언트 초기화
+        llm_client = get_llm_client()
+        
+        # 도메인 분류 요청
+        result = await llm_client.generate(
+            prompt=DOMAIN_PROMPT_TEMPLATE.format(query=query)
+        )
+        
+        # JSON 추출 및 처리
+        json_str = result.strip().strip("```json").strip("```").strip()
+        logger.debug(f"[도메인 분류기] 응답: {json_str}")
+        
         return json.loads(json_str)
-    except Exception as e:
+    except json.JSONDecodeError as e:
+        logger.error(f"[도메인 분류기] JSON 파싱 실패: {str(e)}")
+        logger.error(f"[도메인 분류기] 원본 응답: {result}")
         raise ValueError(f"[도메인 분류기] 파싱 오류: {e}\n원본 응답: {result}")
+    except Exception as e:
+        logger.error(f"[도메인 분류기] 처리 중 오류 발생: {str(e)}")
+        raise ValueError(f"[도메인 분류기] 처리 중 오류 발생: {str(e)}")
 
 async def classify_agentic_query(query: str) -> Dict[str, str]:
     """
@@ -86,23 +90,27 @@ async def classify_agentic_query(query: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: 분류 결과를 포함한 딕셔너리
     """
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": AGENTIC_PROMPT_TEMPLATE.format(query=query),
-        "stream": False,
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.post(OLLAMA_URL, json=payload)
-        response.raise_for_status()
-        result = response.json()["response"]
-
-    json_str = result.strip().strip("```json").strip("```").strip()
-
     try:
+        # LLM 클라이언트 초기화
+        llm_client = get_llm_client()
+        
+        # 에이전트 분류 요청
+        result = await llm_client.generate(
+            prompt=AGENTIC_PROMPT_TEMPLATE.format(query=query)
+        )
+        
+        # JSON 추출 및 처리
+        json_str = result.strip().strip("```json").strip("```").strip()
+        logger.debug(f"[에이전트 분류기] 응답: {json_str}")
+        
         return json.loads(json_str)
-    except Exception as e:
+    except json.JSONDecodeError as e:
+        logger.error(f"[에이전트 분류기] JSON 파싱 실패: {str(e)}")
+        logger.error(f"[에이전트 분류기] 원본 응답: {result}")
         raise ValueError(f"[에이전트 분류기] 파싱 오류: {e}\n원본 응답: {result}")
+    except Exception as e:
+        logger.error(f"[에이전트 분류기] 처리 중 오류 발생: {str(e)}")
+        raise ValueError(f"[에이전트 분류기] 처리 중 오류 발생: {str(e)}")
 
 async def classify_specialized_query(query: str) -> Dict[str, str]:
     """
@@ -114,20 +122,24 @@ async def classify_specialized_query(query: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: 분류 결과를 포함한 딕셔너리
     """
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": SPECIALIZED_PROMPT_TEMPLATE.format(query=query),
-        "stream": False,
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.post(OLLAMA_URL, json=payload)
-        response.raise_for_status()
-        result = response.json()["response"]
-
-    json_str = result.strip().strip("```json").strip("```").strip()
-
     try:
+        # LLM 클라이언트 초기화
+        llm_client = get_llm_client()
+        
+        # 전문 분류 요청
+        result = await llm_client.generate(
+            prompt=SPECIALIZED_PROMPT_TEMPLATE.format(query=query)
+        )
+        
+        # JSON 추출 및 처리
+        json_str = result.strip().strip("```json").strip("```").strip()
+        logger.debug(f"[전문 분류기] 응답: {json_str}")
+        
         return json.loads(json_str)
-    except Exception as e:
+    except json.JSONDecodeError as e:
+        logger.error(f"[전문 분류기] JSON 파싱 실패: {str(e)}")
+        logger.error(f"[전문 분류기] 원본 응답: {result}")
         raise ValueError(f"[전문 분류기] 파싱 오류: {e}\n원본 응답: {result}")
+    except Exception as e:
+        logger.error(f"[전문 분류기] 처리 중 오류 발생: {str(e)}")
+        raise ValueError(f"[전문 분류기] 처리 중 오류 발생: {str(e)}")
