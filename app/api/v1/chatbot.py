@@ -4,21 +4,33 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
 from loguru import logger
-from app.services.chatbot_response_generator import ResponseGenerator
+from app.services.chatbot import Chatbot
 
-router = APIRouter(prefix="/chatbot", tags=["Chatbot"])
+router = APIRouter(
+    prefix="/chatbot",
+    tags=["Chatbot"],
+    responses={
+        500: {"description": "Internal server error"},
+        400: {"description": "Bad request"}
+    }
+)
 
 class ChatbotRequest(BaseModel):
     """챗봇 요청 모델"""
-    uid: str
     query: str
+    uid: str
 
 class ChatbotResponse(BaseModel):
     """챗봇 응답 모델"""
     response: str
     data: Dict[str, Any]
 
-@router.post("", response_model=ChatbotResponse)
+@router.post(
+    "",
+    response_model=ChatbotResponse,
+    summary="챗봇 응답 생성",
+    description="사용자 질의에 대한 챗봇 응답을 생성합니다."
+)
 async def chatbot_handler(request: ChatbotRequest) -> ChatbotResponse:
     """
     챗봇 핸들러
@@ -28,22 +40,21 @@ async def chatbot_handler(request: ChatbotRequest) -> ChatbotResponse:
         
     Returns:
         ChatbotResponse: 챗봇 응답
+        
+    Raises:
+        HTTPException: 처리 중 오류가 발생한 경우
     """
     try:
-        # 응답 생성기 초기화
-        generator = ResponseGenerator()
+        # 챗봇 초기화
+        chatbot = Chatbot()
         
         # 응답 생성
-        result = await generator.generate_response(request.query)
+        result = await chatbot.get_response(request.query)
         
-        # 응답 형식 변환
+        # 응답 반환
         return ChatbotResponse(
-            response=result["type"],
-            data={
-                "original_query": request.query,
-                "response": result["response"],
-                "metadata": result["metadata"]
-            }
+            response=result["response"],
+            data=result["data"]
         )
     except Exception as e:
         logger.error(f"챗봇 처리 중 오류 발생: {str(e)}")
