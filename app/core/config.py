@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         description="경량 모델용 Ollama API 서버 URL"
     )
     LIGHTWEIGHT_OLLAMA_MODEL: str = Field(
-        default="gemma:2b",
+        default="gemma3:1b",
         description="경량 모델용 Ollama 모델"
     )
     LIGHTWEIGHT_OLLAMA_TIMEOUT: int = Field(
@@ -39,7 +39,7 @@ class Settings(BaseSettings):
         description="고성능 모델용 Ollama API 서버 URL"
     )
     HIGH_PERFORMANCE_OLLAMA_MODEL: str = Field(
-        default="gemma:7b",
+        default="gemma3:12b",
         description="고성능 모델용 Ollama 모델"
     )
     HIGH_PERFORMANCE_OLLAMA_TIMEOUT: int = Field(
