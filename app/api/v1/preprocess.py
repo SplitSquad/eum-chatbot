@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import Dict
 from app.core.preprocess import translate_query
 
-router = APIRouter()
+router = APIRouter(prefix="/preprocess", tags=["Preprocess"])
 
 @router.get("/ping")
 def ping():

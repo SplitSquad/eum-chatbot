@@ -1,12 +1,14 @@
 # app/main.py
 
 from fastapi import FastAPI
-from app.api.v1 import agentic, chatbot, preprocess, classify_agentic, classify_chatbot
+from app.api.v1 import chatbot, agentic
 
-app = FastAPI()
+app = FastAPI(
+    title="EUM Chatbot API",
+    description="EUM Chatbot API 서비스",
+    version="1.0.0"
+)
 
-app.include_router(agentic.router)
-app.include_router(chatbot.router)
-app.include_router(preprocess.router)
-app.include_router(classify_agentic.router)
-app.include_router(classify_chatbot.router)
+# API 라우터 등록
+app.include_router(chatbot.router, prefix="/api/v1")
+app.include_router(agentic.router, prefix="/api/v1")

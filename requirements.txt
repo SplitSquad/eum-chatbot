@@ -1,27 +1,49 @@
 # FastAPI 관련
-fastapi==0.110.1
-uvicorn[standard]==0.29.0
+fastapi==0.110.0
+uvicorn==0.27.1
 
 # HTTP 비동기 통신
 httpx==0.27.0
 
 # 데이터 모델 검증
-pydantic==2.6.4
+pydantic==2.6.3
 
 # Ollama API 호출 시 JSON 파싱 등
 python-dotenv==1.0.1
 
 # 임베딩 모델 및 RAG용
-langchain==0.1.13
+langchain>=0.1.0
 langchainhub==0.1.14
 chromadb==0.4.24
 sentence-transformers==2.6.1
 
 # HuggingFace 임베딩
 transformers==4.40.0
-torch==2.2.2
+torch>=2.2.2
 accelerate==0.28.0
 
 # Optional: 데이터 분석이나 로깅 등에 유용
 rich==13.7.1
 loguru==0.7.2
+
+# LLM 관련
+openai>=1.12.0
+langchain-openai>=0.0.2
+
+# 웹 프레임워크
+python-multipart>=0.0.6
+
+# 데이터 처리
+pydantic-settings==2.2.1
+
+# 테스트
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# 기타
+requests>=2.31.0
+aiohttp>=3.9.0
+
+# 언어 처리
+googletrans==3.1.0a0
+langdetect==1.0.9
