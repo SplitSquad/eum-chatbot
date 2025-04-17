@@ -1,11 +1,9 @@
 # app/core/preprocess.py
 
-import httpx
 from typing import Dict
 import json
-
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "gemma3:12b"  # 또는 mistral, llama3 등
+from loguru import logger
+from app.core.llm_client import get_llm_client
 
 PROMPT_TEMPLATE = """
 Detect the language of the following query, then translate it to English.
@@ -34,25 +32,28 @@ async def translate_query(query: str) -> Dict[str, str]:
     Raises:
         ValueError:번역 응답을 파싱할 수 없는 경우에 예외를 발생시킵니다.
     """
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": PROMPT_TEMPLATE.format(query=query),
-        "stream": False,
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.post(OLLAMA_URL, json=payload)
-        response.raise_for_status()
-        result = response.json()["response"]
-
-    # JSON 추출 및 처리
-    json_str = result.strip().strip("```json").strip("```").strip()
-
     try:
+        # LLM 클라이언트 초기화
+        llm_client = get_llm_client()
+        
+        # 번역 요청
+        result = await llm_client.generate(
+            prompt=PROMPT_TEMPLATE.format(query=query)
+        )
+        
+        # JSON 추출 및 처리
+        json_str = result.strip().strip("```json").strip("```").strip()
+        logger.debug(f"번역 응답: {json_str}")
+        
         data = json.loads(json_str)
         return {
             "translated_query": data["translated_query"],
             "lang_code": data["lang_code"]
         }
-    except Exception as e:
+    except json.JSONDecodeError as e:
+        logger.error(f"번역 응답 JSON 파싱 실패: {str(e)}")
+        logger.error(f"원본 응답: {result}")
         raise ValueError(f"번역 응답 파싱 오류: {e}\n원본 응답: {result}")
+    except Exception as e:
+        logger.error(f"번역 처리 중 오류 발생: {str(e)}")
+        raise ValueError(f"번역 처리 중 오류 발생: {str(e)}")
