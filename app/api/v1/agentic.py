@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
 from loguru import logger
-from app.services.preprocessor import translate_query
-from app.services.agentic_classifier import AgentClassifier
+from app.services.common.preprocessor import translate_query
+from app.services.agentic.agentic_classifier import AgentClassifier
 
 router = APIRouter(
     prefix="/agentic",
