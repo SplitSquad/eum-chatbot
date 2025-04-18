@@ -5,7 +5,7 @@ from app.core.llm_client import get_llm_client
 
 class QueryType(str, Enum):
     """질의 유형"""
-    SIMPLE = "simple"  # 단순 대화
+    GENERAL = "general"  # 일반 대화
     REASONING = "reasoning"  # 추론
     WEB_SEARCH = "web_search"  # 웹 검색
 
@@ -51,40 +51,17 @@ class ChatbotClassifier:
             
         except Exception as e:
             logger.error(f"분류 중 오류 발생: {str(e)}")
-            return QueryType.SIMPLE, RAGType.NONE
+            return QueryType.GENERAL, RAGType.NONE
     
     async def _classify_query_type(self, query: str) -> QueryType:
         """질의 유형을 분류합니다."""
-        prompt = f"""
-        Classify the following query into one of these types:
-        
-        - simple: For simple conversations or basic information requests
-        - reasoning: For questions requiring step-by-step explanation, logical reasoning, or analysis
-        - web_search: For questions requiring up-to-date information or web search
-        
-        Examples:
-        - "Hello" -> simple
-        - "Explain the step-by-step procedure for applying for social welfare benefits" -> reasoning
-        - "What are the recent changes in the social security system?" -> web_search
-        
-        Query: {query}
-        
-        Return only the type name.
-        """
-        
         try:
-            response = await self.llm_client.generate(prompt)
-            response = response.strip().lower()
-            
-            if "reasoning" in response:
-                return QueryType.REASONING
-            elif "web_search" in response:
-                return QueryType.WEB_SEARCH
-            else:
-                return QueryType.SIMPLE
+            # TODO: LLM을 활용한 질의 유형 분류 구현
+            # 임시로 모든 질의를 일반 대화로 분류
+            return QueryType.GENERAL
         except Exception as e:
             logger.error(f"질의 유형 분류 중 오류 발생: {str(e)}")
-            return QueryType.SIMPLE
+            return QueryType.GENERAL
     
     async def _classify_rag_type(self, query: str) -> RAGType:
         """RAG 유형을 분류합니다."""
