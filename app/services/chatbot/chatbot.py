@@ -1,17 +1,17 @@
 from typing import Optional, Dict, Any
 from loguru import logger
 from app.core.llm_client import get_llm_client
-from app.services.preprocessor import translate_query
-from app.services.classifier import Classifier, QueryType, RAGType
-from app.services.rag_service import RAGService
-from app.services.postprocessor import Postprocessor
+from app.services.common.preprocessor import translate_query
+from app.services.chatbot.chatbot_classifier import ChatbotClassifier, QueryType, RAGType
+from app.services.chatbot.chatbot_rag_service import ChatbotRAGService
+from app.services.common.postprocessor import Postprocessor
 
 class Chatbot:
     """챗봇 클래스"""
     
     def __init__(self):
-        self.classifier = Classifier()
-        self.rag_service = RAGService()
+        self.classifier = ChatbotClassifier()
+        self.rag_service = ChatbotRAGService()
         self.postprocessor = Postprocessor()
         self.llm_client = get_llm_client(is_lightweight=False)
         logger.info(f"[챗봇] 고성능 모델 사용: {self.llm_client.model}")
@@ -42,6 +42,7 @@ class Chatbot:
             logger.info(f"[챗봇] 분류 완료 - 질의 유형: {query_type.value}, RAG 유형: {rag_type.value}")
             
             # 3. 응답 생성
+            logger.info(f"[챗봇] 응답 생성 시작 - 질의 유형: {query_type.value}, RAG 유형: {rag_type.value}")
             if query_type == QueryType.GENERAL:
                 response = await self._generate_general_response(english_query, rag_type)
             elif query_type == QueryType.REASONING:
@@ -50,6 +51,7 @@ class Chatbot:
                 response = await self._generate_web_search_response(english_query, rag_type)
             else:
                 response = "죄송합니다. 현재는 일반 대화, 추론, 웹 검색 유형의 질문만 처리할 수 있습니다."
+            logger.info(f"[챗봇] 응답 생성 완료 - 응답 길이: {len(response)}자")
             
             # 4. 후처리
             postprocessed = await self.postprocessor.postprocess(response, source_lang, rag_type.value)
@@ -66,8 +68,10 @@ class Chatbot:
                     "rag_type": postprocessed["rag_type"],
                     "used_rag": postprocessed["used_rag"],
                     "metadata": {
-                        "model": self.llm_client.model,
-                        "response_type": query_type.value
+                        "source_lang": source_lang,
+                        "query_type": query_type.value,
+                        "rag_type": postprocessed["rag_type"],
+                        "model": self.llm_client.model
                     }
                 }
             }
@@ -79,8 +83,10 @@ class Chatbot:
                     "original_query": query,
                     "response": None,
                     "metadata": {
-                        "model": self.llm_client.model,
-                        "response_type": "error"
+                        "source_lang": "unknown",
+                        "query_type": "error",
+                        "rag_type": "none",
+                        "model": self.llm_client.model
                     }
                 }
             }
@@ -111,8 +117,40 @@ class Chatbot:
     
     async def _generate_reasoning_response(self, query: str, rag_type: RAGType) -> str:
         """추론 응답을 생성합니다."""
-        # TODO: 추론 응답 로직 구현
-        return "죄송합니다. 추론 응답 기능은 아직 구현 중입니다."
+        try:
+            # RAG 컨텍스트 생성
+            context = ""
+            if rag_type != RAGType.NONE:
+                context = await self.rag_service.get_context(rag_type, query)
+                if context:
+                    logger.info(f"[챗봇] RAG 컨텍스트 생성 완료: {len(context)}자")
+            
+            # Chain of Thought 프롬프트 생성
+            context_part = f"Relevant Context:\n{context}" if context else ""
+            prompt = f"""
+            Please provide a detailed, step-by-step reasoning response to the following query.
+            
+            Query: {query}
+            
+            {context_part}
+            
+            Response Format:
+            1. Problem Understanding: Identify the core question and required information.
+            2. Information Analysis: Analyze relevant information from the context and general knowledge.
+            3. Reasoning Process: Explain the logical steps to derive the answer.
+            4. Final Answer: Provide a clear and accurate answer based on the analysis and reasoning.
+            
+            Please clearly separate each step and provide detailed explanations for the reasoning process.
+            """
+            
+            logger.info("[챗봇] 추론 응답 생성 시작")
+            response = await self.llm_client.generate(prompt, temperature=0.5)
+            logger.info(f"[챗봇] 추론 응답 생성 완료: {len(response)}자")
+            
+            return response.strip()
+        except Exception as e:
+            logger.error(f"추론 응답 생성 중 오류 발생: {str(e)}")
+            return "죄송합니다. 추론 응답을 생성하는 중에 오류가 발생했습니다."
     
     async def _generate_web_search_response(self, query: str, rag_type: RAGType) -> str:
         """웹 검색 응답을 생성합니다."""
