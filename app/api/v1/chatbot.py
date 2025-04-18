@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
 from loguru import logger
-from app.services.chatbot.chatbot import Chatbot
+from app.services.chatbot import Chatbot
 
 router = APIRouter(
     prefix="/chatbot",
@@ -23,7 +23,7 @@ class ChatbotRequest(BaseModel):
 class ChatbotResponse(BaseModel):
     """챗봇 응답 모델"""
     response: str
-    data: Dict[str, Any]
+    metadata: Dict[str, Any]
 
 @router.post(
     "",
@@ -49,12 +49,12 @@ async def chatbot_handler(request: ChatbotRequest) -> ChatbotResponse:
         chatbot = Chatbot()
         
         # 응답 생성
-        result = await chatbot.get_response(request.query)
+        result = await chatbot.get_response(request.query, request.uid)
         
         # 응답 반환
         return ChatbotResponse(
             response=result["response"],
-            data=result["data"]
+            metadata=result["metadata"]
         )
     except Exception as e:
         logger.error(f"챗봇 처리 중 오류 발생: {str(e)}")

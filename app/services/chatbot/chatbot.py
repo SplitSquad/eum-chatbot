@@ -16,78 +16,42 @@ class Chatbot:
         self.llm_client = get_llm_client(is_lightweight=False)
         logger.info(f"[챗봇] 고성능 모델 사용: {self.llm_client.model}")
     
-    async def get_response(self, query: str) -> Dict[str, Any]:
-        """
-        사용자 질의에 대한 응답을 생성합니다.
-        
-        Args:
-            query: 사용자 질의
-            
-        Returns:
-            Dict[str, Any]: 응답 결과
-        """
+    async def get_response(self, query: str, uid: str) -> Dict[str, Any]:
+        """질의에 대한 응답을 생성합니다."""
         try:
-            logger.info(f"[챗봇] 질의 처리 시작: {query}")
+            # 질의 유형과 RAG 유형 분류
+            query_type, rag_type = await self.classifier.classify(query)
             
-            # 1. 전처리
-            translation = await translate_query(query)
-            english_query = translation["translated_query"]
-            source_lang = translation["lang_code"]
-            logger.info(f"[챗봇] 전처리 완료 - 영어: {english_query}, 원문 언어: {source_lang}")
-            
-            # 2. 분류
-            classification = await self.classifier.classify(english_query)
-            query_type = classification["query_type"]
-            rag_type = classification["rag_type"]
-            logger.info(f"[챗봇] 분류 완료 - 질의 유형: {query_type.value}, RAG 유형: {rag_type.value}")
-            
-            # 3. 응답 생성
-            logger.info(f"[챗봇] 응답 생성 시작 - 질의 유형: {query_type.value}, RAG 유형: {rag_type.value}")
-            if query_type == QueryType.GENERAL:
-                response = await self._generate_general_response(english_query, rag_type)
-            elif query_type == QueryType.REASONING:
-                response = await self._generate_reasoning_response(english_query, rag_type)
+            # 응답 생성
+            if query_type == QueryType.REASONING:
+                response = await self._generate_reasoning_response(query, rag_type)
             elif query_type == QueryType.WEB_SEARCH:
-                response = await self._generate_web_search_response(english_query, rag_type)
+                response = await self._generate_web_search_response(query, rag_type)
+            elif query_type == QueryType.GENERAL:
+                response = await self._generate_general_response(query, rag_type)
             else:
                 response = "죄송합니다. 현재는 일반 대화, 추론, 웹 검색 유형의 질문만 처리할 수 있습니다."
-            logger.info(f"[챗봇] 응답 생성 완료 - 응답 길이: {len(response)}자")
             
-            # 4. 후처리
-            postprocessed = await self.postprocessor.postprocess(response, source_lang, rag_type.value)
-            logger.info(f"[챗봇] 후처리 완료 - RAG 사용: {postprocessed['used_rag']}")
-            
-            # 5. 결과 반환
             return {
-                "response": postprocessed["response"],
-                "data": {
-                    "original_query": query,
-                    "english_query": english_query,
-                    "source_lang": source_lang,
+                "response": response,
+                "metadata": {
+                    "query": query,
                     "query_type": query_type.value,
-                    "rag_type": postprocessed["rag_type"],
-                    "used_rag": postprocessed["used_rag"],
-                    "metadata": {
-                        "source_lang": source_lang,
-                        "query_type": query_type.value,
-                        "rag_type": postprocessed["rag_type"],
-                        "model": self.llm_client.model
-                    }
+                    "rag_type": rag_type.value,
+                    "uid": uid
                 }
             }
+            
         except Exception as e:
             logger.error(f"응답 생성 중 오류 발생: {str(e)}")
             return {
                 "response": "죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다.",
-                "data": {
-                    "original_query": query,
-                    "response": None,
-                    "metadata": {
-                        "source_lang": "unknown",
-                        "query_type": "error",
-                        "rag_type": "none",
-                        "model": self.llm_client.model
-                    }
+                "metadata": {
+                    "query": query,
+                    "query_type": "error",
+                    "rag_type": "error",
+                    "uid": uid,
+                    "error": str(e)
                 }
             }
     
