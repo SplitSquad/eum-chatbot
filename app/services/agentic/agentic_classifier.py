@@ -1,8 +1,18 @@
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
+from enum import Enum
 from loguru import logger
 from app.core.llm_client import get_llm_client
 from app.models.agentic_response import AgentType, ActionType
 from app.config.rag_config import RAGDomain
+
+class AgenticType(str, Enum):
+    """에이전틱 기능 유형"""
+    GENERAL = "general"  # 일반 대화
+    SCHEDULE = "schedule"  # 일정 관리
+    TODO = "todo"  # 할 일 관리
+    MEMO = "memo"  # 메모 관리
+    CALENDAR = "calendar"  # 캘린더 관리
+    REMINDER = "reminder"  # 알림 관리
 
 class AgentClassifier:
     """에이전트 분류기"""
@@ -135,4 +145,44 @@ class AgentClassifier:
                 
         except Exception as e:
             logger.error(f"도메인 분류 중 오류 발생: {str(e)}")
-            return RAGDomain.DAILY_LIFE 
+            return RAGDomain.DAILY_LIFE
+
+class AgenticClassifier:
+    """에이전틱 분류기"""
+    
+    def __init__(self):
+        self.llm_client = get_llm_client(is_lightweight=True)
+        logger.info(f"[에이전틱 분류] 경량 모델 사용: {self.llm_client.model}")
+    
+    async def classify(self, query: str) -> AgenticType:
+        """
+        질의를 분류합니다.
+        
+        Args:
+            query: 사용자 질의
+            
+        Returns:
+            AgenticType: 에이전틱 기능 유형
+        """
+        try:
+            logger.info(f"[에이전틱 분류] 질의 분류 시작: {query}")
+            
+            # 질의 유형 분류
+            agentic_type = await self._classify_agentic_type(query)
+            logger.info(f"[에이전틱 분류] 기능 유형: {agentic_type.value}")
+            
+            return agentic_type
+            
+        except Exception as e:
+            logger.error(f"분류 중 오류 발생: {str(e)}")
+            return AgenticType.GENERAL
+    
+    async def _classify_agentic_type(self, query: str) -> AgenticType:
+        """에이전틱 기능 유형을 분류합니다."""
+        try:
+            # TODO: LLM을 활용한 기능 유형 분류 구현
+            # 임시로 모든 질의를 일반 대화로 분류
+            return AgenticType.GENERAL
+        except Exception as e:
+            logger.error(f"기능 유형 분류 중 오류 발생: {str(e)}")
+            return AgenticType.GENERAL 

@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
 from loguru import logger
-from app.services.common.preprocessor import translate_query
-from app.services.agentic.agentic_classifier import AgentClassifier
+from app.services.agentic.agentic_classifier import AgenticClassifier
+from app.services.agentic.agentic_response_generator import AgenticResponseGenerator
 
 router = APIRouter(
     prefix="/agentic",
@@ -17,60 +17,55 @@ router = APIRouter(
 )
 
 class AgenticRequest(BaseModel):
-    """에이전트 요청 모델"""
+    """에이전틱 요청 모델"""
     query: str
     uid: str
 
 class AgenticResponse(BaseModel):
-    """에이전트 응답 모델"""
+    """에이전틱 응답 모델"""
     response: str
-    data: Dict
+    metadata: Dict[str, Any]
 
 @router.post(
     "",
     response_model=AgenticResponse,
-    summary="에이전트 분류",
-    description="사용자 질의에 대한 에이전트 유형, 액션 유형, 도메인을 분류합니다."
+    summary="에이전틱 응답 생성",
+    description="사용자 질의에 대한 에이전틱 응답을 생성합니다."
 )
-async def agentic_handler(payload: AgenticRequest) -> AgenticResponse:
+async def agentic_handler(request: AgenticRequest) -> AgenticResponse:
     """
-    에이전트 핸들러
+    에이전틱 핸들러
     
     Args:
-        payload: 에이전트 요청
+        request: 에이전틱 요청
         
     Returns:
-        AgenticResponse: 에이전트 분류 결과
+        AgenticResponse: 에이전틱 응답
         
     Raises:
         HTTPException: 처리 중 오류가 발생한 경우
     """
     try:
-        # 번역
-        translated = await translate_query(payload.query)
-        english_query = translated["translated_query"]
-        lang_code = translated["lang_code"]
+        # 분류기 초기화
+        classifier = AgenticClassifier()
         
-        # 분류
-        classifier = AgentClassifier()
-        agentic_result = await classifier.classify(english_query)
+        # 응답 생성기 초기화
+        generator = AgenticResponseGenerator()
         
+        # 질의 분류
+        agentic_type = await classifier.classify(request.query)
+        
+        # 응답 생성
+        result = await generator.generate_response(request.query, agentic_type)
+        
+        # 응답 반환
         return AgenticResponse(
-            response="agentic_classification",
-            data={
-                "original_query": payload.query,
-                "lang_code": lang_code,
-                "translated_query": english_query,
-                "agentic_classification": {
-                    "agent_type": agentic_result["agent_type"].value,
-                    "action_type": agentic_result["action_type"].value,
-                    "domain": agentic_result["domain"].value
-                }
-            }
+            response=result["response"],
+            metadata=result["metadata"]
         )
     except Exception as e:
-        logger.error(f"에이전트 처리 중 오류 발생: {str(e)}")
+        logger.error(f"에이전틱 처리 중 오류 발생: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"에이전트 처리 중 오류가 발생했습니다: {str(e)}"
+            detail=f"에이전틱 처리 중 오류가 발생했습니다: {str(e)}"
         )
