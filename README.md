@@ -15,6 +15,37 @@
 - RAG 기반 정확한 정보 제공
 - 추론 기반 복잡한 질문 처리
 
+## 프로젝트 구조
+
+```
+eum-chatbot/
+├── app/
+│   ├── api/
+│   │   └── v1/
+│   │       ├── chatbot.py      # 챗봇 API 엔드포인트
+│   │       └── agentic.py      # 에이전트 API 엔드포인트
+│   ├── core/
+│   │   └── llm_client.py       # LLM 클라이언트
+│   ├── services/
+│   │   ├── chatbot/            # 챗봇 관련 서비스
+│   │   │   ├── chatbot.py
+│   │   │   ├── chatbot_classifier.py
+│   │   │   └── chatbot_rag_service.py
+│   │   ├── agentic/            # 에이전트 관련 서비스
+│   │   │   ├── agentic.py
+│   │   │   └── agentic_classifier.py
+│   │   └── common/             # 공통 서비스
+│   │       ├── preprocessor.py
+│   │       └── postprocessor.py
+│   ├── config/
+│   │   └── rag_config.py       # RAG 설정
+│   └── main.py                 # FastAPI 애플리케이션
+├── tests/                      # 테스트 코드
+├── logs/                       # 로그 파일
+├── .env                        # 환경 변수
+└── requirements.txt            # 의존성 목록
+```
+
 ## 개발 환경 설정
 
 ### 1. Python 환경 설정
@@ -85,19 +116,34 @@ Content-Type: application/json
 }
 ```
 
-## 개발 가이드
+## 코드 컨벤션
 
-### 1. RAG 도메인 추가
+### 1. 디렉토리 구조
+- `app/`: 애플리케이션 코드
+  - `api/`: API 엔드포인트
+  - `core/`: 핵심 기능
+  - `services/`: 비즈니스 로직
+    - `chatbot/`: 챗봇 관련 서비스
+    - `agentic/`: 에이전트 관련 서비스
+    - `common/`: 공통 서비스
+  - `config/`: 설정 파일
 
-1. `app/config/rag_config.py`에 새로운 도메인 추가
-2. `app/services/rag_service.py`에 도메인별 문서 추가
-3. `app/models/chatbot_response.py`에 RAG 유형 추가
+### 2. 파일 명명 규칙
+- Python 파일: snake_case.py
+- 클래스: PascalCase
+- 함수/변수: snake_case
+- 상수: UPPER_SNAKE_CASE
 
-### 2. 새로운 기능 추가
+### 3. 코드 스타일
+- PEP 8 준수
+- 타입 힌트 사용
+- docstring 작성
+- 로깅 활용
 
-1. `app/services/` 디렉토리에 새로운 서비스 클래스 추가
-2. `app/api/v1/` 디렉토리에 API 엔드포인트 추가
-3. `app/models/` 디렉토리에 필요한 데이터 모델 추가
+### 4. 로깅
+- `loguru` 라이브러리 사용
+- 로그 레벨: DEBUG, INFO, WARNING, ERROR
+- 로그 포맷: `[모듈명] 메시지`
 
 ## 테스트
 
@@ -106,23 +152,15 @@ Content-Type: application/json
 pytest tests/
 ```
 
-## 로깅
-
-- 로그 파일: `server.log`
-- 로그 레벨: INFO
-- 주요 로그 포인트:
-  - 전처리: 번역, 언어 감지
-  - 분류: 질의 유형, RAG 유형
-  - 응답 생성: RAG 컨텍스트, LLM 응답
-  - 후처리: 번역, 응답 정제
-
 ## 서버 실행 방법
-프로젝트 루트에서 다음 실행(백그라운드 실행)
-nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload > uvicorn.log 2>&1 &
 
-서버 종료는 다음으로 실행
+```bash
+# 백그라운드 실행
+nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload > logs/uvicorn.log 2>&1 &
+
+# 서버 종료
 ps aux | grep uvicorn      # 실행 중인 프로세스 확인
 kill -9 [PID]              # 프로세스 종료
+```
 
-
-서버 실행 중 로그는 프로젝트 루트의 uvicorn.log 확인
+서버 실행 중 로그는 `logs/` 디렉토리에서 확인할 수 있습니다.

@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
 from loguru import logger
-from app.services.chatbot import Chatbot
+from app.services.chatbot.chatbot import Chatbot
 
 router = APIRouter(
     prefix="/chatbot",
