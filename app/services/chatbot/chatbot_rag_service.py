@@ -54,7 +54,7 @@ class ChatbotRAGService:
             except Exception as e:
                 logger.error(f"테스트 문서 추가 중 오류 발생: {str(e)}")
     
-    async def add_documents(self, domain: RAGDomain, documents: List[str]) -> None:
+    def add_documents(self, domain: RAGDomain, documents: List[str]) -> None:
         """
         특정 도메인의 문서를 벡터 DB에 추가합니다.
         
