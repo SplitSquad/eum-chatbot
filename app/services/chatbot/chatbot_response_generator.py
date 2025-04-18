@@ -13,31 +13,16 @@ class ChatbotResponseGenerator:
         self.rag_service = ChatbotRAGService()
     
     async def generate_response(self, query: str, query_type: QueryType, rag_type: RAGType) -> str:
-        """
-        질의에 대한 응답을 생성합니다.
-        
-        Args:
-            query: 질의
-            query_type: 질의 유형
-            rag_type: RAG 유형
-            
-        Returns:
-            str: 생성된 응답
-        """
+        """응답을 생성합니다."""
         try:
-            logger.info(f"[Response] 응답 생성 시작 - 질의 유형: {query_type.value}")
-            
             if query_type == QueryType.REASONING:
                 return await self._generate_reasoning_response(query, rag_type)
             elif query_type == QueryType.WEB_SEARCH:
-                response = await self._generate_web_search_response(query)
-                return response["response"]
-            elif query_type == QueryType.SIMPLE:
-                response = await self._generate_simple_response(query)
-                return response["response"]
+                return await self._generate_web_search_response(query, rag_type)
+            elif query_type == QueryType.GENERAL:
+                return await self._generate_general_response(query, rag_type)
             else:
-                logger.error(f"[Response] 지원하지 않는 질의 유형: {query_type.value}")
-                return "죄송합니다. 지원하지 않는 질의 유형입니다."
+                return "죄송합니다. 현재는 일반 대화, 추론, 웹 검색 유형의 질문만 처리할 수 있습니다."
                 
         except Exception as e:
             logger.error(f"응답 생성 중 오류 발생: {str(e)}")
