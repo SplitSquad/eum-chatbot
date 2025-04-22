@@ -11,9 +11,10 @@ class ChatbotResponseGenerator:
     
     def __init__(self):
         self.rag_service = RAGService()
-        self.llm_client = get_llm_client(is_lightweight=True)
+        # 경량 모델 클라이언트는 더 이상 사용하지 않습니다
+        # 모든 응답에 고성능 모델만 사용
         self.high_performance_llm = get_llm_client(is_lightweight=False)
-        logger.info(f"[응답 생성기] 고성능 모델 사용: {self.high_performance_llm.model}")
+        logger.info(f"[응답 생성기] 고성능 모델 사용: {self.high_performance_llm.model}, 타임아웃: {self.high_performance_llm.timeout}초")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"[응답 생성기] 디바이스: {self.device}")
     
@@ -30,6 +31,10 @@ class ChatbotResponseGenerator:
             str: 생성된 응답
         """
         try:
+            logger.info(f"[RESPONSE] Input query (English): {query}")
+            logger.info(f"[RESPONSE] Query type: {query_type.value}")
+            logger.info(f"[RESPONSE] RAG type: {rag_type.value}")
+            
             if query_type == QueryType.REASONING:
                 return await self._generate_reasoning_response(query, rag_type)
             elif query_type == QueryType.WEB_SEARCH:
@@ -37,11 +42,11 @@ class ChatbotResponseGenerator:
             elif query_type == QueryType.GENERAL:
                 return await self._generate_general_response(query, rag_type)
             else:
-                return "죄송합니다. 현재는 일반 대화, 추론, 웹 검색 유형의 질문만 처리할 수 있습니다."
+                return "Sorry, currently only general conversation, reasoning, and web search type questions can be processed."
                 
         except Exception as e:
             logger.error(f"응답 생성 중 오류 발생: {str(e)}")
-            return "죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다."
+            return "Sorry, an error occurred while generating the response."
     
     async def _generate_general_response(self, query: str, rag_type: RAGType) -> str:
         """일반 대화 응답을 생성합니다."""
@@ -52,20 +57,28 @@ class ChatbotResponseGenerator:
                 context = await self.rag_service.get_context(rag_type, query)
                 if context:
                     logger.info(f"[응답 생성기] RAG 컨텍스트 생성 완료: {len(context)}자")
+                    logger.debug(f"[RESPONSE] RAG context: {context[:200]}...")
+                else:
+                    logger.info("[RESPONSE] No RAG context available")
             
             # 프롬프트 생성
             prompt = self._generate_prompt(query, context)
             logger.info("[응답 생성기] 프롬프트 생성 완료")
+            logger.debug(f"[RESPONSE] Generated prompt: {prompt}")
             
-            # 응답 생성
-            logger.info("[응답 생성기] 응답 생성 시작")
-            response = await self.llm_client.generate(prompt)
+            # 응답 생성 (고성능 모델 사용)
+            logger.info(f"[응답 생성기] 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
+            response = await self.high_performance_llm.generate(prompt)
             logger.info(f"[응답 생성기] 응답 생성 완료: {len(response)}자")
+            logger.info(f"[RESPONSE] Generated response: {response}")
             
             return response.strip()
         except Exception as e:
             logger.error(f"일반 응답 생성 중 오류 발생: {str(e)}")
-            return "죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다."
+            # 타임아웃 오류일 경우 실제 타임아웃 값을 포함한 메시지 반환
+            if "타임아웃" in str(e):
+                return f"Sorry, the response generation timed out after {self.high_performance_llm.timeout} seconds. Please try again later."
+            return "Sorry, an error occurred while generating the response."
     
     async def _generate_reasoning_response(self, query: str, rag_type: RAGType) -> str:
         """추론 응답을 생성합니다."""
@@ -76,34 +89,46 @@ class ChatbotResponseGenerator:
             context = await self.rag_service.get_context(rag_type, query)
             if not context:
                 logger.warning("[응답 생성기] RAG 컨텍스트가 없습니다.")
-                return "죄송합니다. 해당 질문에 대한 정보를 찾을 수 없습니다."
+                logger.info("[RESPONSE] No RAG context available for reasoning")
+                return "Sorry, no information could be found for this question."
+            else:
+                logger.debug(f"[RESPONSE] RAG context for reasoning: {context[:200]}...")
             
             # 프롬프트 생성
-            prompt = f"""다음은 외국인을 위한 한국 생활 정보입니다:
+            prompt = f"""The following is information about life in Korea for foreigners:
 
 {context}
 
-질문: {query}
+Question: {query}
 
-위 정보를 바탕으로 질문에 답변해주세요. 답변은 친절하고 이해하기 쉽게 작성해주세요."""
+Please answer the question based on the information above. Provide a friendly and easy-to-understand response."""
+            
+            logger.debug(f"[RESPONSE] Reasoning prompt: {prompt[:200]}...")
             
             # 응답 생성
+            logger.info(f"[응답 생성기] 추론 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
             response = await self.high_performance_llm.generate(prompt)
             if not response:
                 logger.error("[응답 생성기] LLM 응답 생성 실패")
-                return "죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다."
+                return "Sorry, an error occurred while generating the response."
             
             logger.info("[응답 생성기] 추론 응답 생성 완료")
+            logger.info(f"[RESPONSE] Generated reasoning response: {response}")
+            
             return response.strip()
             
         except Exception as e:
             logger.error(f"추론 응답 생성 중 오류 발생: {str(e)}")
-            return "죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다."
+            # 타임아웃 오류일 경우 실제 타임아웃 값을 포함한 메시지 반환
+            if "타임아웃" in str(e):
+                return f"Sorry, the response generation timed out after {self.high_performance_llm.timeout} seconds. Please try again later."
+            return "Sorry, an error occurred while generating the response."
     
     async def _generate_web_search_response(self, query: str, rag_type: RAGType) -> str:
         """웹 검색 응답을 생성합니다."""
         # TODO: 웹 검색 응답 로직 구현
-        return "죄송합니다. 웹 검색 응답 기능은 아직 구현 중입니다."
+        logger.info(f"[RESPONSE] Web search not implemented yet for query: {query}")
+        return "Sorry, web search response functionality is still under development."
     
     def _generate_prompt(self, query: str, context: str = "") -> str:
         """프롬프트를 생성합니다."""
@@ -121,7 +146,7 @@ class ChatbotResponseGenerator:
         
         base_prompt += """
         
-        Please provide a clear and concise response in Korean.
+        Please provide a clear and concise response in English.
         """
         
         return base_prompt 

@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional
 import httpx
 import time
 from loguru import logger
-from app.core.config import settings
+from app.config.app_config import settings, LLMProvider
 
 class BaseLLMClient(ABC):
     """LLM 클라이언트의 기본 추상 클래스"""
@@ -27,10 +27,12 @@ class OllamaClient(BaseLLMClient):
             self.base_url = settings.LIGHTWEIGHT_OLLAMA_URL
             self.model = settings.LIGHTWEIGHT_OLLAMA_MODEL
             self.timeout = settings.LIGHTWEIGHT_OLLAMA_TIMEOUT
+            logger.info(f"[OllamaClient] 경량 모델 초기화 완료: URL={self.base_url}, MODEL={self.model}, TIMEOUT={self.timeout}초")
         else:
             self.base_url = settings.HIGH_PERFORMANCE_OLLAMA_URL
             self.model = settings.HIGH_PERFORMANCE_OLLAMA_MODEL
             self.timeout = settings.HIGH_PERFORMANCE_OLLAMA_TIMEOUT
+            logger.info(f"[OllamaClient] 고성능 모델 초기화 완료: URL={self.base_url}, MODEL={self.model}, TIMEOUT={self.timeout}초")
         self.generate_url = f"{self.base_url}/api/generate"
         self.tags_url = f"{self.base_url}/api/tags"
     
@@ -184,9 +186,9 @@ def get_llm_client(is_lightweight: bool = True) -> BaseLLMClient:
     """
     provider = settings.LIGHTWEIGHT_LLM_PROVIDER if is_lightweight else settings.HIGH_PERFORMANCE_LLM_PROVIDER
     
-    if provider == "ollama":
+    if provider == LLMProvider.OLLAMA:
         return OllamaClient(is_lightweight=is_lightweight)
-    elif provider == "openai":
+    elif provider == LLMProvider.OPENAI:
         return OpenAIClient(is_lightweight=is_lightweight)
     else:
         raise ValueError(f"지원하지 않는 LLM 프로바이더: {provider}") 
