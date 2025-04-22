@@ -76,3 +76,5 @@ htmlcov/
 *.mov
 *.wmv
 
+logs/app.log
+logs/error.log
