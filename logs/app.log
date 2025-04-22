@@ -114,3 +114,162 @@
 2025-04-22 13:31:24.647 | INFO     | app.main:shutdown_event:37 - [WORKFLOW] Server shutting down
 2025-04-22 13:31:26.933 | INFO     | app.main:<module>:10 - Application starting up...
 2025-04-22 13:31:26.935 | INFO     | app.main:startup_event:33 - [WORKFLOW] Server started successfully
+2025-04-22 13:31:49.935 | INFO     | app.main:<module>:10 - Application starting up...
+2025-04-22 13:31:49.937 | INFO     | app.main:startup_event:33 - [WORKFLOW] Server started successfully
+2025-04-22 13:31:50.457 | INFO     | app.services.chatbot.chatbot_classifier:__init__:27 - [분류] 경량 모델 사용: llama3:8b
+2025-04-22 13:31:50.457 | INFO     | logging:callHandlers:1762 - Load pretrained SentenceTransformer: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+2025-04-22 13:31:50.469 | DEBUG    | logging:callHandlers:1762 - Starting new HTTPS connection (1): huggingface.co:443
+2025-04-22 13:31:51.026 | DEBUG    | logging:callHandlers:1762 - https://huggingface.co:443 "HEAD /sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/modules.json HTTP/1.1" 200 0
+2025-04-22 13:31:51.225 | DEBUG    | logging:callHandlers:1762 - https://huggingface.co:443 "HEAD /sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/config_sentence_transformers.json HTTP/1.1" 200 0
+2025-04-22 13:31:51.422 | DEBUG    | logging:callHandlers:1762 - https://huggingface.co:443 "HEAD /sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/README.md HTTP/1.1" 200 0
+2025-04-22 13:31:51.629 | DEBUG    | logging:callHandlers:1762 - https://huggingface.co:443 "HEAD /sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/modules.json HTTP/1.1" 200 0
+2025-04-22 13:31:51.958 | DEBUG    | logging:callHandlers:1762 - https://huggingface.co:443 "HEAD /sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/sentence_bert_config.json HTTP/1.1" 200 0
+2025-04-22 13:31:52.169 | DEBUG    | logging:callHandlers:1762 - https://huggingface.co:443 "HEAD /sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/config.json HTTP/1.1" 200 0
+2025-04-22 13:31:53.811 | DEBUG    | logging:callHandlers:1762 - https://huggingface.co:443 "HEAD /sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+2025-04-22 13:31:54.495 | DEBUG    | logging:callHandlers:1762 - https://huggingface.co:443 "GET /api/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/revision/main HTTP/1.1" 200 6096
+2025-04-22 13:31:54.532 | INFO     | logging:callHandlers:1762 - Use pytorch device_name: mps
+2025-04-22 13:31:54.852 | INFO     | app.services.common.rag_service:__init__:15 - [RAG] 임베딩 모델 사용: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+2025-04-22 13:31:54.868 | INFO     | logging:callHandlers:1762 - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-04-22 13:31:54.935 | DEBUG    | logging:callHandlers:1762 - Starting component System
+2025-04-22 13:31:54.935 | DEBUG    | logging:callHandlers:1762 - Starting component Posthog
+2025-04-22 13:31:54.935 | DEBUG    | logging:callHandlers:1762 - Starting component OpenTelemetryClient
+2025-04-22 13:31:54.935 | DEBUG    | logging:callHandlers:1762 - Starting component SimpleAssignmentPolicy
+2025-04-22 13:31:54.935 | DEBUG    | logging:callHandlers:1762 - Starting component SqliteDB
+2025-04-22 13:31:54.937 | DEBUG    | logging:callHandlers:1762 - Starting component QuotaEnforcer
+2025-04-22 13:31:54.938 | DEBUG    | logging:callHandlers:1762 - Starting component LocalSegmentManager
+2025-04-22 13:31:54.938 | DEBUG    | logging:callHandlers:1762 - Starting component SegmentAPI
+2025-04-22 13:31:54.942 | INFO     | app.services.common.rag_service:__init__:36 - [RAG] visa_law 도메인 초기화 완료: data/vectorstore1
+2025-04-22 13:31:54.943 | INFO     | logging:callHandlers:1762 - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-04-22 13:31:54.943 | DEBUG    | logging:callHandlers:1762 - Starting component System
+2025-04-22 13:31:54.943 | DEBUG    | logging:callHandlers:1762 - Starting component Posthog
+2025-04-22 13:31:54.944 | DEBUG    | logging:callHandlers:1762 - Starting component OpenTelemetryClient
+2025-04-22 13:31:54.944 | DEBUG    | logging:callHandlers:1762 - Starting component SimpleAssignmentPolicy
+2025-04-22 13:31:54.944 | DEBUG    | logging:callHandlers:1762 - Starting component SqliteDB
+2025-04-22 13:31:54.945 | DEBUG    | logging:callHandlers:1762 - Starting component QuotaEnforcer
+2025-04-22 13:31:54.945 | DEBUG    | logging:callHandlers:1762 - Starting component LocalSegmentManager
+2025-04-22 13:31:54.945 | DEBUG    | logging:callHandlers:1762 - Starting component SegmentAPI
+2025-04-22 13:31:54.946 | INFO     | app.services.common.rag_service:__init__:36 - [RAG] social_security 도메인 초기화 완료: data/vectorstore2
+2025-04-22 13:31:54.947 | INFO     | logging:callHandlers:1762 - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-04-22 13:31:54.947 | DEBUG    | logging:callHandlers:1762 - Starting component System
+2025-04-22 13:31:54.947 | DEBUG    | logging:callHandlers:1762 - Starting component Posthog
+2025-04-22 13:31:54.947 | DEBUG    | logging:callHandlers:1762 - Starting component OpenTelemetryClient
+2025-04-22 13:31:54.947 | DEBUG    | logging:callHandlers:1762 - Starting component SimpleAssignmentPolicy
+2025-04-22 13:31:54.947 | DEBUG    | logging:callHandlers:1762 - Starting component SqliteDB
+2025-04-22 13:31:54.948 | DEBUG    | logging:callHandlers:1762 - Starting component QuotaEnforcer
+2025-04-22 13:31:54.948 | DEBUG    | logging:callHandlers:1762 - Starting component LocalSegmentManager
+2025-04-22 13:31:54.949 | DEBUG    | logging:callHandlers:1762 - Starting component SegmentAPI
+2025-04-22 13:31:54.949 | INFO     | app.services.common.rag_service:__init__:36 - [RAG] tax_finance 도메인 초기화 완료: data/vectorstore3
+2025-04-22 13:31:54.950 | INFO     | logging:callHandlers:1762 - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-04-22 13:31:54.951 | DEBUG    | logging:callHandlers:1762 - Starting component System
+2025-04-22 13:31:54.951 | DEBUG    | logging:callHandlers:1762 - Starting component Posthog
+2025-04-22 13:31:54.951 | DEBUG    | logging:callHandlers:1762 - Starting component OpenTelemetryClient
+2025-04-22 13:31:54.951 | DEBUG    | logging:callHandlers:1762 - Starting component SimpleAssignmentPolicy
+2025-04-22 13:31:54.951 | DEBUG    | logging:callHandlers:1762 - Starting component SqliteDB
+2025-04-22 13:31:54.952 | DEBUG    | logging:callHandlers:1762 - Starting component QuotaEnforcer
+2025-04-22 13:31:54.952 | DEBUG    | logging:callHandlers:1762 - Starting component LocalSegmentManager
+2025-04-22 13:31:54.952 | DEBUG    | logging:callHandlers:1762 - Starting component SegmentAPI
+2025-04-22 13:31:54.952 | INFO     | app.services.common.rag_service:__init__:36 - [RAG] medical_health 도메인 초기화 완료: data/vectorstore4
+2025-04-22 13:31:54.953 | INFO     | logging:callHandlers:1762 - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-04-22 13:31:54.954 | DEBUG    | logging:callHandlers:1762 - Starting component System
+2025-04-22 13:31:54.954 | DEBUG    | logging:callHandlers:1762 - Starting component Posthog
+2025-04-22 13:31:54.954 | DEBUG    | logging:callHandlers:1762 - Starting component OpenTelemetryClient
+2025-04-22 13:31:54.954 | DEBUG    | logging:callHandlers:1762 - Starting component SimpleAssignmentPolicy
+2025-04-22 13:31:54.954 | DEBUG    | logging:callHandlers:1762 - Starting component SqliteDB
+2025-04-22 13:31:54.955 | DEBUG    | logging:callHandlers:1762 - Starting component QuotaEnforcer
+2025-04-22 13:31:54.955 | DEBUG    | logging:callHandlers:1762 - Starting component LocalSegmentManager
+2025-04-22 13:31:54.955 | DEBUG    | logging:callHandlers:1762 - Starting component SegmentAPI
+2025-04-22 13:31:54.956 | INFO     | app.services.common.rag_service:__init__:36 - [RAG] employment 도메인 초기화 완료: data/vectorstore5
+2025-04-22 13:31:54.957 | INFO     | logging:callHandlers:1762 - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-04-22 13:31:54.957 | DEBUG    | logging:callHandlers:1762 - Starting component System
+2025-04-22 13:31:54.957 | DEBUG    | logging:callHandlers:1762 - Starting component Posthog
+2025-04-22 13:31:54.957 | DEBUG    | logging:callHandlers:1762 - Starting component OpenTelemetryClient
+2025-04-22 13:31:54.957 | DEBUG    | logging:callHandlers:1762 - Starting component SimpleAssignmentPolicy
+2025-04-22 13:31:54.957 | DEBUG    | logging:callHandlers:1762 - Starting component SqliteDB
+2025-04-22 13:31:54.958 | DEBUG    | logging:callHandlers:1762 - Starting component QuotaEnforcer
+2025-04-22 13:31:54.958 | DEBUG    | logging:callHandlers:1762 - Starting component LocalSegmentManager
+2025-04-22 13:31:54.958 | DEBUG    | logging:callHandlers:1762 - Starting component SegmentAPI
+2025-04-22 13:31:54.959 | ERROR    | app.services.common.rag_service:__init__:38 - [RAG] daily_life 도메인 초기화 중 오류 발생: no such column: collections.topic
+2025-04-22 13:31:54.959 | INFO     | app.services.chatbot.chatbot_response_generator:__init__:16 - [응답 생성기] 고성능 모델 사용: gemma3:12b
+2025-04-22 13:31:54.959 | INFO     | app.services.chatbot.chatbot_response_generator:__init__:18 - [응답 생성기] 디바이스: cpu
+2025-04-22 13:31:54.959 | INFO     | app.services.common.postprocessor:__init__:28 - [Postprocess] Using lightweight model: llama3:8b
+2025-04-22 13:31:54.959 | INFO     | app.services.chatbot.chatbot:__init__:15 - [챗봇] 초기화 완료
+2025-04-22 13:31:54.959 | INFO     | app.services.chatbot.chatbot:get_response:20 - [WORKFLOW] ====== Starting chatbot workflow for user user_id ======
+2025-04-22 13:31:54.959 | INFO     | app.services.chatbot.chatbot:get_response:21 - [WORKFLOW] Original query: 韓国で就職しようとしていますが、就職に必要なスペックを教えてください。
+2025-04-22 13:31:54.959 | INFO     | app.services.chatbot.chatbot_classifier:classify:40 - [분류] 질의 분류 시작: 韓国で就職しようとしていますが、就職に必要なスペックを教えてください。
+2025-04-22 13:31:54.959 | INFO     | app.services.chatbot.chatbot_classifier:classify:44 - [분류] 질의 유형: general
+2025-04-22 13:31:54.960 | DEBUG    | logging:callHandlers:1762 - load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-22 13:31:54.961 | DEBUG    | logging:callHandlers:1762 - load_verify_locations cafile='/Users/songkyubeen/Desktop/FinalProject/eum-chatbot/.venv/lib/python3.12/site-packages/certifi/cacert.pem'
+2025-04-22 13:31:54.970 | DEBUG    | logging:callHandlers:1762 - connect_tcp.started host='localhost' port=11434 local_address=None timeout=30 socket_options=None
+2025-04-22 13:31:54.972 | DEBUG    | logging:callHandlers:1762 - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x3392d67e0>
+2025-04-22 13:31:54.972 | DEBUG    | logging:callHandlers:1762 - send_request_headers.started request=<Request [b'POST']>
+2025-04-22 13:31:54.972 | DEBUG    | logging:callHandlers:1762 - send_request_headers.complete
+2025-04-22 13:31:54.972 | DEBUG    | logging:callHandlers:1762 - send_request_body.started request=<Request [b'POST']>
+2025-04-22 13:31:54.972 | DEBUG    | logging:callHandlers:1762 - send_request_body.complete
+2025-04-22 13:31:54.972 | DEBUG    | logging:callHandlers:1762 - receive_response_headers.started request=<Request [b'POST']>
+2025-04-22 13:31:54.976 | DEBUG    | logging:callHandlers:1762 - receive_response_headers.complete return_value=(b'HTTP/1.1', 404, b'Not Found', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 22 Apr 2025 04:31:54 GMT'), (b'Content-Length', b'39')])
+2025-04-22 13:31:54.976 | INFO     | logging:callHandlers:1762 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2025-04-22 13:31:54.976 | DEBUG    | logging:callHandlers:1762 - receive_response_body.started request=<Request [b'POST']>
+2025-04-22 13:31:54.976 | DEBUG    | logging:callHandlers:1762 - receive_response_body.complete
+2025-04-22 13:31:54.976 | DEBUG    | logging:callHandlers:1762 - response_closed.started
+2025-04-22 13:31:54.977 | DEBUG    | logging:callHandlers:1762 - response_closed.complete
+2025-04-22 13:31:54.977 | INFO     | app.core.llm_client:generate:70 - [Ollama 경량] API 요청 시간: 0.01초
+2025-04-22 13:31:54.977 | DEBUG    | logging:callHandlers:1762 - close.started
+2025-04-22 13:31:54.977 | DEBUG    | logging:callHandlers:1762 - close.complete
+2025-04-22 13:31:54.977 | ERROR    | app.core.llm_client:generate:91 - [Ollama 경량] 예상치 못한 오류: Client error '404 Not Found' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404 (소요 시간: 0.02초)
+2025-04-22 13:31:54.977 | ERROR    | app.services.chatbot.chatbot_classifier:_classify_rag_type:93 - RAG 유형 분류 중 오류 발생: Ollama 처리 중 오류 발생: Client error '404 Not Found' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-04-22 13:31:54.977 | INFO     | app.services.chatbot.chatbot_classifier:classify:48 - [분류] RAG 유형: none
+2025-04-22 13:31:54.977 | INFO     | app.services.chatbot.chatbot:get_response:25 - [챗봇] 분류 완료 - 질의 유형: general, RAG 유형: none
+2025-04-22 13:31:54.977 | INFO     | app.services.chatbot.chatbot:get_response:26 - [WORKFLOW] Query classified as general, RAG type: none
+2025-04-22 13:31:54.977 | INFO     | app.services.chatbot.chatbot:get_response:29 - [WORKFLOW] Step 1: Preprocessing (language detection and translation)
+2025-04-22 13:31:54.977 | INFO     | app.services.common.preprocessor:translate_query:41 - [PREPROCESS] Original query: 韓国で就職しようとしていますが、就職に必要なスペックを教えてください。
+2025-04-22 13:31:54.977 | INFO     | app.services.common.preprocessor:translate_query:47 - [Preprocess] Client initialization time: 0.00 seconds
+2025-04-22 13:31:54.977 | INFO     | app.services.common.preprocessor:translate_query:48 - [Preprocess] Model used: llama3:8b
+2025-04-22 13:31:54.977 | DEBUG    | logging:callHandlers:1762 - load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-22 13:31:54.978 | DEBUG    | logging:callHandlers:1762 - load_verify_locations cafile='/Users/songkyubeen/Desktop/FinalProject/eum-chatbot/.venv/lib/python3.12/site-packages/certifi/cacert.pem'
+2025-04-22 13:31:54.983 | DEBUG    | logging:callHandlers:1762 - connect_tcp.started host='localhost' port=11434 local_address=None timeout=30 socket_options=None
+2025-04-22 13:31:54.987 | DEBUG    | logging:callHandlers:1762 - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x318b9ee40>
+2025-04-22 13:31:54.987 | DEBUG    | logging:callHandlers:1762 - send_request_headers.started request=<Request [b'GET']>
+2025-04-22 13:31:54.988 | DEBUG    | logging:callHandlers:1762 - send_request_headers.complete
+2025-04-22 13:31:54.988 | DEBUG    | logging:callHandlers:1762 - send_request_body.started request=<Request [b'GET']>
+2025-04-22 13:31:54.988 | DEBUG    | logging:callHandlers:1762 - send_request_body.complete
+2025-04-22 13:31:54.988 | DEBUG    | logging:callHandlers:1762 - receive_response_headers.started request=<Request [b'GET']>
+2025-04-22 13:31:54.991 | DEBUG    | logging:callHandlers:1762 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 22 Apr 2025 04:31:54 GMT'), (b'Content-Length', b'2028')])
+2025-04-22 13:31:54.991 | INFO     | logging:callHandlers:1762 - HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2025-04-22 13:31:54.991 | DEBUG    | logging:callHandlers:1762 - receive_response_body.started request=<Request [b'GET']>
+2025-04-22 13:31:54.991 | DEBUG    | logging:callHandlers:1762 - receive_response_body.complete
+2025-04-22 13:31:54.992 | DEBUG    | logging:callHandlers:1762 - response_closed.started
+2025-04-22 13:31:54.992 | DEBUG    | logging:callHandlers:1762 - response_closed.complete
+2025-04-22 13:31:54.992 | INFO     | app.core.llm_client:check_connection:46 - [Ollama 경량] 연결 확인 시간: 0.01초
+2025-04-22 13:31:54.992 | DEBUG    | logging:callHandlers:1762 - close.started
+2025-04-22 13:31:54.992 | DEBUG    | logging:callHandlers:1762 - close.complete
+2025-04-22 13:31:54.992 | INFO     | app.services.common.preprocessor:translate_query:55 - [Preprocess] Server connection check time: 0.01 seconds
+2025-04-22 13:31:54.992 | DEBUG    | logging:callHandlers:1762 - load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-22 13:31:54.992 | DEBUG    | logging:callHandlers:1762 - load_verify_locations cafile='/Users/songkyubeen/Desktop/FinalProject/eum-chatbot/.venv/lib/python3.12/site-packages/certifi/cacert.pem'
+2025-04-22 13:31:54.997 | DEBUG    | logging:callHandlers:1762 - connect_tcp.started host='localhost' port=11434 local_address=None timeout=30 socket_options=None
+2025-04-22 13:31:55.000 | DEBUG    | logging:callHandlers:1762 - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x16c8316d0>
+2025-04-22 13:31:55.000 | DEBUG    | logging:callHandlers:1762 - send_request_headers.started request=<Request [b'POST']>
+2025-04-22 13:31:55.000 | DEBUG    | logging:callHandlers:1762 - send_request_headers.complete
+2025-04-22 13:31:55.000 | DEBUG    | logging:callHandlers:1762 - send_request_body.started request=<Request [b'POST']>
+2025-04-22 13:31:55.000 | DEBUG    | logging:callHandlers:1762 - send_request_body.complete
+2025-04-22 13:31:55.000 | DEBUG    | logging:callHandlers:1762 - receive_response_headers.started request=<Request [b'POST']>
+2025-04-22 13:31:55.002 | DEBUG    | logging:callHandlers:1762 - receive_response_headers.complete return_value=(b'HTTP/1.1', 404, b'Not Found', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 22 Apr 2025 04:31:55 GMT'), (b'Content-Length', b'39')])
+2025-04-22 13:31:55.002 | INFO     | logging:callHandlers:1762 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2025-04-22 13:31:55.002 | DEBUG    | logging:callHandlers:1762 - receive_response_body.started request=<Request [b'POST']>
+2025-04-22 13:31:55.002 | DEBUG    | logging:callHandlers:1762 - receive_response_body.complete
+2025-04-22 13:31:55.002 | DEBUG    | logging:callHandlers:1762 - response_closed.started
+2025-04-22 13:31:55.002 | DEBUG    | logging:callHandlers:1762 - response_closed.complete
+2025-04-22 13:31:55.002 | INFO     | app.core.llm_client:generate:70 - [Ollama 경량] API 요청 시간: 0.01초
+2025-04-22 13:31:55.002 | DEBUG    | logging:callHandlers:1762 - close.started
+2025-04-22 13:31:55.002 | DEBUG    | logging:callHandlers:1762 - close.complete
+2025-04-22 13:31:55.002 | ERROR    | app.core.llm_client:generate:91 - [Ollama 경량] 예상치 못한 오류: Client error '404 Not Found' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404 (소요 시간: 0.01초)
+2025-04-22 13:31:55.003 | ERROR    | app.services.common.preprocessor:translate_query:91 - [Preprocess] Error during translation processing: Ollama 처리 중 오류 발생: Client error '404 Not Found' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404 (Time elapsed: 0.03 seconds)
+2025-04-22 13:31:55.003 | ERROR    | app.services.chatbot.chatbot:get_response:65 - 응답 생성 중 오류 발생: Error during translation processing: Ollama 처리 중 오류 발생: Client error '404 Not Found' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-04-22 13:31:55.003 | ERROR    | app.services.chatbot.chatbot:get_response:66 - [WORKFLOW] ====== Error in chatbot workflow: Error during translation processing: Ollama 처리 중 오류 발생: Client error '404 Not Found' for url 'http://localhost:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404 ======
+2025-04-22 13:31:55.445 | DEBUG    | logging:callHandlers:1762 - Starting new HTTPS connection (1): us.i.posthog.com:443
+2025-04-22 13:31:56.077 | DEBUG    | logging:callHandlers:1762 - https://us.i.posthog.com:443 "POST /batch/ HTTP/1.1" 200 15
