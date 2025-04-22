@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional
 import httpx
 import time
 from loguru import logger
-from app.core.config import settings
+from app.config.app_config import settings, LLMProvider
 
 class BaseLLMClient(ABC):
     """LLM 클라이언트의 기본 추상 클래스"""
@@ -24,13 +24,13 @@ class OllamaClient(BaseLLMClient):
     def __init__(self, is_lightweight: bool = True):
         self.is_lightweight = is_lightweight
         if is_lightweight:
-            self.base_url = settings.LIGHTWEIGHT_OLLAMA_URL
-            self.model = settings.LIGHTWEIGHT_OLLAMA_MODEL
-            self.timeout = settings.LIGHTWEIGHT_OLLAMA_TIMEOUT
+            self.base_url = settings.OLLAMA_BASE_URL
+            self.model = settings.OLLAMA_LIGHTWEIGHT_MODEL
+            self.timeout = 30  # Default timeout in seconds
         else:
-            self.base_url = settings.HIGH_PERFORMANCE_OLLAMA_URL
-            self.model = settings.HIGH_PERFORMANCE_OLLAMA_MODEL
-            self.timeout = settings.HIGH_PERFORMANCE_OLLAMA_TIMEOUT
+            self.base_url = settings.OLLAMA_BASE_URL
+            self.model = settings.OLLAMA_HIGHPERFORMANCE_MODEL
+            self.timeout = 60  # Default timeout in seconds
         self.generate_url = f"{self.base_url}/api/generate"
         self.tags_url = f"{self.base_url}/api/tags"
     
@@ -97,13 +97,13 @@ class OpenAIClient(BaseLLMClient):
     def __init__(self, is_lightweight: bool = True):
         self.is_lightweight = is_lightweight
         if is_lightweight:
-            self.api_key = settings.LIGHTWEIGHT_OPENAI_API_KEY
-            self.model = settings.LIGHTWEIGHT_OPENAI_MODEL
-            self.timeout = settings.LIGHTWEIGHT_OPENAI_TIMEOUT
+            self.api_key = settings.OPENAI_API_KEY
+            self.model = settings.OPENAI_LIGHTWEIGHT_MODEL
+            self.timeout = 30  # Default timeout in seconds
         else:
-            self.api_key = settings.HIGH_PERFORMANCE_OPENAI_API_KEY
-            self.model = settings.HIGH_PERFORMANCE_OPENAI_MODEL
-            self.timeout = settings.HIGH_PERFORMANCE_OPENAI_TIMEOUT
+            self.api_key = settings.OPENAI_API_KEY
+            self.model = settings.OPENAI_HIGHPERFORMANCE_MODEL
+            self.timeout = 60  # Default timeout in seconds
         self.base_url = "https://api.openai.com/v1"
         
         if not self.api_key:
@@ -182,11 +182,11 @@ def get_llm_client(is_lightweight: bool = True) -> BaseLLMClient:
     Args:
         is_lightweight (bool): 경량 모델 사용 여부 (기본값: True)
     """
-    provider = settings.LIGHTWEIGHT_LLM_PROVIDER if is_lightweight else settings.HIGH_PERFORMANCE_LLM_PROVIDER
+    provider = settings.LIGHTWEIGHT_LLM_PROVIDER if is_lightweight else settings.HIGHPERFORMANCE_LLM_PROVIDER
     
-    if provider == "ollama":
+    if provider == LLMProvider.OLLAMA:
         return OllamaClient(is_lightweight=is_lightweight)
-    elif provider == "openai":
+    elif provider == LLMProvider.OPENAI:
         return OpenAIClient(is_lightweight=is_lightweight)
     else:
         raise ValueError(f"지원하지 않는 LLM 프로바이더: {provider}") 
