@@ -2,32 +2,55 @@ from typing import Dict, Any
 from loguru import logger
 from app.core.llm_client import get_llm_client
 
+# Language code to full language name mapping
+LANGUAGE_CODE_MAP = {
+    "ko": "Korean",
+    "en": "English",
+    "ja": "Japanese",
+    "zh": "Chinese",
+    "vi": "Vietnamese",
+    "th": "Thai",
+    "id": "Indonesian",
+    "ar": "Arabic",
+    "es": "Spanish",
+    "fr": "French",
+    "de": "German",
+    "ru": "Russian",
+    "pt": "Portuguese",
+    "it": "Italian"
+}
+
 class Postprocessor:
-    """후처리 서비스"""
+    """Post-processing service"""
     
     def __init__(self):
         self.llm_client = get_llm_client(is_lightweight=True)
-        logger.info(f"[후처리] 경량 모델 사용: {self.llm_client.model}")
+        logger.info(f"[Postprocess] Using lightweight model: {self.llm_client.model}")
     
     async def postprocess(self, response: str, source_lang: str, rag_type: str) -> Dict[str, Any]:
         """
-        응답을 후처리합니다.
+        Post-processes the response.
         
         Args:
-            response: 영어로 된 응답
-            source_lang: 원문 언어 코드
-            rag_type: 사용된 RAG 유형
+            response: Response in English
+            source_lang: Source language code
+            rag_type: RAG type used
             
         Returns:
-            Dict[str, Any]: 후처리된 응답
+            Dict[str, Any]: Post-processed response
         """
         try:
-            logger.info(f"[후처리] 응답 후처리 시작 - 원문 언어: {source_lang}, RAG 유형: {rag_type}")
+            logger.info(f"[Postprocess] Starting response post-processing - Source language: {source_lang}, RAG type: {rag_type}")
+            logger.info(f"[POSTPROCESS] Input English response: {response}")
             
-            # 원문 언어로 번역
+            # Translate to original language
             if source_lang != 'en':
+                # Get full language name from code
+                language_name = LANGUAGE_CODE_MAP.get(source_lang, source_lang)
+                logger.info(f"[Postprocess] Translating to {language_name} (code: {source_lang})")
+                
                 prompt = f"""
-                Translate the following English text to {source_lang}. 
+                Translate the following English text to {language_name}. 
                 Keep the meaning and tone exactly the same.
                 Only return the translated text without any additional explanation.
                 
@@ -35,13 +58,18 @@ class Postprocessor:
                 {response}
                 """
                 
+                logger.debug(f"[POSTPROCESS] Translation prompt: {prompt}")
+                
                 translated_response = await self.llm_client.generate(prompt)
-                logger.info(f"[후처리] 번역 완료: {translated_response}")
+                logger.info(f"[Postprocess] Translation completed: {translated_response}")
+                logger.info(f"[POSTPROCESS] Translated response ({language_name}): {translated_response}")
             else:
+                logger.info("[POSTPROCESS] No translation needed (source language is English)")
                 translated_response = response
             
-            # RAG 사용 여부 확인
+            # Check if RAG was used
             used_rag = rag_type != "none"
+            logger.info(f"[POSTPROCESS] RAG was used: {used_rag}")
             
             return {
                 "response": translated_response,
@@ -49,9 +77,10 @@ class Postprocessor:
                 "rag_type": rag_type if used_rag else None
             }
         except Exception as e:
-            logger.error(f"후처리 중 오류 발생: {str(e)}")
+            logger.error(f"[Postprocess] Error during post-processing: {str(e)}")
+            logger.error(f"[POSTPROCESS] Returning original response due to error")
             return {
-                "response": response,  # 번역 실패 시 원문 응답 반환
+                "response": response,  # Return original response if translation fails
                 "used_rag": False,
                 "rag_type": None
             } 
