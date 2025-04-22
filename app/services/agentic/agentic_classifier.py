@@ -3,7 +3,7 @@ from enum import Enum
 from loguru import logger
 from app.core.llm_client import get_llm_client
 from app.models.agentic_response import AgentType, ActionType
-from app.config.rag_config import RAGDomain
+from app.services.chatbot.chatbot_classifier import RAGType
 
 class AgenticType(str, Enum):
     """에이전틱 기능 유형"""
@@ -42,13 +42,13 @@ class AgentClassifier:
         logger.info(f"[분류기] 액션 유형: {action_type.value}")
         
         # 도메인 분류
-        domain = await self._classify_domain(query)
-        logger.info(f"[분류기] 도메인: {domain.value}")
+        rag_type = await self._classify_rag_type(query)
+        logger.info(f"[분류기] RAG 유형: {rag_type.value}")
         
         result = {
             "agent_type": agent_type,
             "action_type": action_type,
-            "domain": domain
+            "rag_type": rag_type
         }
         
         logger.info(f"[분류기] 분류 완료: {result}")
@@ -114,8 +114,8 @@ class AgentClassifier:
             logger.error(f"액션 유형 분류 중 오류 발생: {str(e)}")
             return ActionType.INFORM
     
-    async def _classify_domain(self, query: str) -> RAGDomain:
-        """도메인을 분류합니다."""
+    async def _classify_rag_type(self, query: str) -> RAGType:
+        """RAG 유형을 분류합니다."""
         prompt = f"""
         다음 질문이 어떤 도메인에 속하는지 판단해주세요.
         질문: {query}
@@ -130,22 +130,22 @@ class AgentClassifier:
         """
         
         try:
-            logger.info(f"[분류기] 도메인 분류 시작")
+            logger.info(f"[분류기] RAG 유형 분류 시작")
             response = await self.llm_client.generate(prompt)
             response = response.strip().lower()
-            logger.info(f"[분류기] 도메인 분류 결과: {response}")
+            logger.info(f"[분류기] RAG 유형 분류 결과: {response}")
             
             # 응답에서 도메인 추출
-            for domain in RAGDomain:
-                if domain.value in response:
-                    return domain
+            for rag_type in RAGType:
+                if rag_type.value in response:
+                    return rag_type
             
             # 기본값으로 일상생활 도메인 반환
-            return RAGDomain.DAILY_LIFE
+            return RAGType.DAILY_LIFE
                 
         except Exception as e:
-            logger.error(f"도메인 분류 중 오류 발생: {str(e)}")
-            return RAGDomain.DAILY_LIFE
+            logger.error(f"RAG 유형 분류 중 오류 발생: {str(e)}")
+            return RAGType.DAILY_LIFE
 
 class AgenticClassifier:
     """에이전틱 분류기"""
