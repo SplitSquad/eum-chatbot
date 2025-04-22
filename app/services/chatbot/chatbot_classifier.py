@@ -68,12 +68,12 @@ class ChatbotClassifier:
         prompt = f"""
         Classify the following query into one of these RAG types:
         
-        - visa_law: Questions about visas and legal matters
-        - social_security: Questions about social security system
-        - tax_finance: Questions about taxes and finance
-        - medical_health: Questions about medical and health
-        - employment: Questions about employment
-        - daily_life: Questions about daily life
+        - visa_law: Questions about visas and legal matters, immigration, etc.
+        - social_security: Questions about social security system, social insurance, etc.
+        - tax_finance: Questions about taxes and finance, banking, etc.
+        - medical_health: Questions about medical and health, medicine, etc.
+        - employment: Questions about employment, job, etc.
+        - daily_life: Questions about daily life, education, etc.
         - none: No specific domain knowledge required
         
         Query: {query}
