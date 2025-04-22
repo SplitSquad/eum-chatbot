@@ -13,8 +13,9 @@ class Chatbot:
         self.classifier = ChatbotClassifier()
         self.rag_service = ChatbotRAGService()
         self.postprocessor = Postprocessor()
-        self.llm_client = get_llm_client(is_lightweight=False)
-        logger.info(f"[챗봇] 고성능 모델 사용: {self.llm_client.model}")
+        self.llm_client = get_llm_client(is_lightweight=True)
+        self.high_performance_llm = get_llm_client(is_lightweight=False)
+        logger.info(f"[챗봇] 고성능 모델 사용: {self.high_performance_llm.model}")
     
     async def get_response(self, query: str, uid: str) -> Dict[str, Any]:
         """질의에 대한 응답을 생성합니다."""
@@ -23,14 +24,7 @@ class Chatbot:
             query_type, rag_type = await self.classifier.classify(query)
             
             # 응답 생성
-            if query_type == QueryType.REASONING:
-                response = await self._generate_reasoning_response(query, rag_type)
-            elif query_type == QueryType.WEB_SEARCH:
-                response = await self._generate_web_search_response(query, rag_type)
-            elif query_type == QueryType.GENERAL:
-                response = await self._generate_general_response(query, rag_type)
-            else:
-                response = "죄송합니다. 현재는 일반 대화, 추론, 웹 검색 유형의 질문만 처리할 수 있습니다."
+            response = await self.generate_response(query, query_type, rag_type)
             
             return {
                 "response": response,
@@ -54,6 +48,22 @@ class Chatbot:
                     "error": str(e)
                 }
             }
+    
+    async def generate_response(self, query: str, query_type: QueryType, rag_type: RAGType) -> str:
+        """응답을 생성합니다."""
+        try:
+            if query_type == QueryType.REASONING:
+                return await self._generate_reasoning_response(query, rag_type)
+            elif query_type == QueryType.WEB_SEARCH:
+                return await self._generate_web_search_response(query, rag_type)
+            elif query_type == QueryType.GENERAL:
+                return await self._generate_general_response(query, rag_type)
+            else:
+                return "죄송합니다. 현재는 일반 대화, 추론, 웹 검색 유형의 질문만 처리할 수 있습니다."
+                
+        except Exception as e:
+            logger.error(f"응답 생성 중 오류 발생: {str(e)}")
+            return "죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다."
     
     async def _generate_general_response(self, query: str, rag_type: RAGType) -> str:
         """일반 대화 응답을 생성합니다."""
@@ -82,39 +92,35 @@ class Chatbot:
     async def _generate_reasoning_response(self, query: str, rag_type: RAGType) -> str:
         """추론 응답을 생성합니다."""
         try:
-            # RAG 컨텍스트 생성
-            context = ""
-            if rag_type != RAGType.NONE:
-                context = await self.rag_service.get_context(rag_type, query)
-                if context:
-                    logger.info(f"[챗봇] RAG 컨텍스트 생성 완료: {len(context)}자")
-            
-            # Chain of Thought 프롬프트 생성
-            context_part = f"Relevant Context:\n{context}" if context else ""
-            prompt = f"""
-            Please provide a detailed, step-by-step reasoning response to the following query.
-            
-            Query: {query}
-            
-            {context_part}
-            
-            Response Format:
-            1. Problem Understanding: Identify the core question and required information.
-            2. Information Analysis: Analyze relevant information from the context and general knowledge.
-            3. Reasoning Process: Explain the logical steps to derive the answer.
-            4. Final Answer: Provide a clear and accurate answer based on the analysis and reasoning.
-            
-            Please clearly separate each step and provide detailed explanations for the reasoning process.
-            """
-            
             logger.info("[챗봇] 추론 응답 생성 시작")
-            response = await self.llm_client.generate(prompt, temperature=0.5)
-            logger.info(f"[챗봇] 추론 응답 생성 완료: {len(response)}자")
             
+            # RAG 컨텍스트 가져오기
+            context = await self.rag_service.get_context(rag_type, query)
+            if not context:
+                logger.warning("[챗봇] RAG 컨텍스트가 없습니다.")
+                return "죄송합니다. 해당 질문에 대한 정보를 찾을 수 없습니다."
+            
+            # 프롬프트 생성
+            prompt = f"""Here is information about living in Korea for foreigners:
+
+{context}
+
+Question: {query}
+
+Please answer the question based on the information above. Make your response friendly and easy to understand."""
+            
+            # 응답 생성
+            response = await self.high_performance_llm.generate(prompt)
+            if not response:
+                logger.error("[챗봇] LLM 응답 생성 실패")
+                return "죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다."
+            
+            logger.info("[챗봇] 추론 응답 생성 완료")
             return response.strip()
+            
         except Exception as e:
             logger.error(f"추론 응답 생성 중 오류 발생: {str(e)}")
-            return "죄송합니다. 추론 응답을 생성하는 중에 오류가 발생했습니다."
+            return "죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다."
     
     async def _generate_web_search_response(self, query: str, rag_type: RAGType) -> str:
         """웹 검색 응답을 생성합니다."""
