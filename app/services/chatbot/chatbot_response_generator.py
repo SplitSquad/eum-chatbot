@@ -11,9 +11,10 @@ class ChatbotResponseGenerator:
     
     def __init__(self):
         self.rag_service = RAGService()
-        self.llm_client = get_llm_client(is_lightweight=True)
+        # 경량 모델 클라이언트는 더 이상 사용하지 않습니다
+        # 모든 응답에 고성능 모델만 사용
         self.high_performance_llm = get_llm_client(is_lightweight=False)
-        logger.info(f"[응답 생성기] 고성능 모델 사용: {self.high_performance_llm.model}")
+        logger.info(f"[응답 생성기] 고성능 모델 사용: {self.high_performance_llm.model}, 타임아웃: {self.high_performance_llm.timeout}초")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"[응답 생성기] 디바이스: {self.device}")
     
@@ -65,15 +66,18 @@ class ChatbotResponseGenerator:
             logger.info("[응답 생성기] 프롬프트 생성 완료")
             logger.debug(f"[RESPONSE] Generated prompt: {prompt}")
             
-            # 응답 생성
-            logger.info("[응답 생성기] 응답 생성 시작")
-            response = await self.llm_client.generate(prompt)
+            # 응답 생성 (고성능 모델 사용)
+            logger.info(f"[응답 생성기] 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
+            response = await self.high_performance_llm.generate(prompt)
             logger.info(f"[응답 생성기] 응답 생성 완료: {len(response)}자")
             logger.info(f"[RESPONSE] Generated response: {response}")
             
             return response.strip()
         except Exception as e:
             logger.error(f"일반 응답 생성 중 오류 발생: {str(e)}")
+            # 타임아웃 오류일 경우 실제 타임아웃 값을 포함한 메시지 반환
+            if "타임아웃" in str(e):
+                return f"Sorry, the response generation timed out after {self.high_performance_llm.timeout} seconds. Please try again later."
             return "Sorry, an error occurred while generating the response."
     
     async def _generate_reasoning_response(self, query: str, rag_type: RAGType) -> str:
@@ -102,6 +106,7 @@ Please answer the question based on the information above. Provide a friendly an
             logger.debug(f"[RESPONSE] Reasoning prompt: {prompt[:200]}...")
             
             # 응답 생성
+            logger.info(f"[응답 생성기] 추론 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
             response = await self.high_performance_llm.generate(prompt)
             if not response:
                 logger.error("[응답 생성기] LLM 응답 생성 실패")
@@ -114,6 +119,9 @@ Please answer the question based on the information above. Provide a friendly an
             
         except Exception as e:
             logger.error(f"추론 응답 생성 중 오류 발생: {str(e)}")
+            # 타임아웃 오류일 경우 실제 타임아웃 값을 포함한 메시지 반환
+            if "타임아웃" in str(e):
+                return f"Sorry, the response generation timed out after {self.high_performance_llm.timeout} seconds. Please try again later."
             return "Sorry, an error occurred while generating the response."
     
     async def _generate_web_search_response(self, query: str, rag_type: RAGType) -> str:
