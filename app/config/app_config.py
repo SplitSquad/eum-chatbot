@@ -10,6 +10,7 @@ load_dotenv()
 class LLMProvider(str, Enum):
     OLLAMA = "ollama"
     OPENAI = "openai"
+    GROQ = "groq"
 
 
 class Settings(BaseModel):
@@ -48,6 +49,11 @@ class Settings(BaseModel):
     HIGH_PERFORMANCE_OPENAI_API_KEY: str
     HIGH_PERFORMANCE_OPENAI_MODEL: str
     HIGH_PERFORMANCE_OPENAI_TIMEOUT: int
+    
+    # Groq 설정
+    GROQ_API_KEY: str
+    GROQ_LIGHTWEIGHT_MODEL: str
+    GROQ_HIGHPERFORMANCE_MODEL: str
 
 
 # .env 파일에서 환경변수 로드 또는 기본값 사용
@@ -63,9 +69,9 @@ def get_env_var(var_name, default_value):
 # 설정 객체 생성
 settings = Settings(
     # 경량 LLM 프로바이더 관련 설정
-    LIGHTWEIGHT_LLM_PROVIDER=LLMProvider(get_env_var("LIGHTWEIGHT_LLM_PROVIDER", "ollama")),
+    LIGHTWEIGHT_LLM_PROVIDER=LLMProvider(get_env_var("LIGHTWEIGHT_LLM_PROVIDER", "groq")),
     # 고성능 LLM 프로바이더 관련 설정
-    HIGH_PERFORMANCE_LLM_PROVIDER=LLMProvider(get_env_var("HIGH_PERFORMANCE_LLM_PROVIDER", "ollama")),
+    HIGH_PERFORMANCE_LLM_PROVIDER=LLMProvider(get_env_var("HIGH_PERFORMANCE_LLM_PROVIDER", "groq")),
 
     # Ollama 경량 모델 설정
     LIGHTWEIGHT_OLLAMA_URL=get_env_var("LIGHTWEIGHT_OLLAMA_URL", "http://localhost:11434"),
@@ -86,7 +92,12 @@ settings = Settings(
     HIGH_PERFORMANCE_OPENAI_API_KEY=get_env_var("HIGH_PERFORMANCE_OPENAI_API_KEY", ""),
     HIGH_PERFORMANCE_OPENAI_MODEL=get_env_var("HIGH_PERFORMANCE_OPENAI_MODEL", "gpt-4"),
     HIGH_PERFORMANCE_OPENAI_TIMEOUT=int(get_env_var("HIGH_PERFORMANCE_OPENAI_TIMEOUT", "60")),
+    
+    # Groq 설정
+    GROQ_API_KEY=get_env_var("GROQ_API_KEY", ""),
+    GROQ_LIGHTWEIGHT_MODEL=get_env_var("GROQ_LIGHTWEIGHT_MODEL", "llama-3.1-8b-instant"),
+    GROQ_HIGHPERFORMANCE_MODEL=get_env_var("GROQ_HIGHPERFORMANCE_MODEL", "llama-3.3-70b-versatile"),
 )
 
 # 디버깅을 위한 설정 로그 출력
-print(f"Loaded settings from .env: LIGHTWEIGHT_OLLAMA_TIMEOUT={settings.LIGHTWEIGHT_OLLAMA_TIMEOUT}") 
+print(f"Loaded settings from .env: LIGHTWEIGHT_LLM_PROVIDER={settings.LIGHTWEIGHT_LLM_PROVIDER}") 

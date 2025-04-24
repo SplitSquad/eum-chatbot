@@ -18,6 +18,94 @@ class BaseLLMClient(ABC):
         """LLM 서버 연결 상태를 확인합니다."""
         pass
 
+class GroqClient(BaseLLMClient):
+    """Groq API 클라이언트"""
+    
+    def __init__(self, is_lightweight: bool = True):
+        self.is_lightweight = is_lightweight
+        self.api_key = settings.GROQ_API_KEY
+        
+        if is_lightweight:
+            self.model = settings.GROQ_LIGHTWEIGHT_MODEL
+            self.timeout = 30  # 경량 모델 기본 타임아웃
+            logger.info(f"[GroqClient] 경량 모델 초기화 완료: MODEL={self.model}, TIMEOUT={self.timeout}초")
+        else:
+            self.model = settings.GROQ_HIGHPERFORMANCE_MODEL
+            self.timeout = 60  # 고성능 모델 기본 타임아웃
+            logger.info(f"[GroqClient] 고성능 모델 초기화 완료: MODEL={self.model}, TIMEOUT={self.timeout}초")
+        
+        self.base_url = "https://api.groq.com/openai/v1"
+        
+        if not self.api_key:
+            raise ValueError("Groq API 키가 설정되지 않았습니다.")
+    
+    async def check_connection(self) -> bool:
+        """Groq 서버 연결 상태를 확인합니다."""
+        start_time = time.time()
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                headers = {"Authorization": f"Bearer {self.api_key}"}
+                response = await client.get(f"{self.base_url}/models", headers=headers)
+                response.raise_for_status()
+                elapsed = time.time() - start_time
+                model_type = "경량" if self.is_lightweight else "고성능"
+                logger.info(f"[Groq {model_type}] 연결 확인 시간: {elapsed:.2f}초")
+                return True
+        except Exception as e:
+            elapsed = time.time() - start_time
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[Groq {model_type}] 서버 연결 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            return False
+    
+    async def generate(self, prompt: str, **kwargs) -> str:
+        """Groq API를 사용하여 텍스트를 생성합니다."""
+        start_time = time.time()
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.7,
+            **kwargs
+        }
+        
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                request_start = time.time()
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers=headers,
+                    json=payload
+                )
+                request_time = time.time() - request_start
+                model_type = "경량" if self.is_lightweight else "고성능"
+                logger.info(f"[Groq {model_type}] API 요청 시간: {request_time:.2f}초")
+                
+                response.raise_for_status()
+                result = response.json()["choices"][0]["message"]["content"]
+                
+                total_time = time.time() - start_time
+                logger.info(f"[Groq {model_type}] 전체 생성 시간: {total_time:.2f}초")
+                return result
+        except httpx.TimeoutException as e:
+            elapsed = time.time() - start_time
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[Groq {model_type}] 요청 타임아웃: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            raise TimeoutError(f"Groq 서버 응답 시간 초과 (타임아웃: {self.timeout}초)")
+        except httpx.RequestError as e:
+            elapsed = time.time() - start_time
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[Groq {model_type}] 요청 실패: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            raise ConnectionError(f"Groq 서버 요청 실패: {str(e)}")
+        except Exception as e:
+            elapsed = time.time() - start_time
+            model_type = "경량" if self.is_lightweight else "고성능"
+            logger.error(f"[Groq {model_type}] 예상치 못한 오류: {str(e)} (소요 시간: {elapsed:.2f}초)")
+            raise ValueError(f"Groq 처리 중 오류 발생: {str(e)}")
+
 class OllamaClient(BaseLLMClient):
     """Ollama API 클라이언트"""
     
@@ -190,5 +278,7 @@ def get_llm_client(is_lightweight: bool = True) -> BaseLLMClient:
         return OllamaClient(is_lightweight=is_lightweight)
     elif provider == LLMProvider.OPENAI:
         return OpenAIClient(is_lightweight=is_lightweight)
+    elif provider == LLMProvider.GROQ:
+        return GroqClient(is_lightweight=is_lightweight)
     else:
         raise ValueError(f"지원하지 않는 LLM 프로바이더: {provider}") 
