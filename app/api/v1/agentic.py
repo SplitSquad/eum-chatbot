@@ -4,8 +4,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
 from loguru import logger
-from app.services.agentic.agentic_classifier import AgenticClassifier
-from app.services.agentic.agentic_response_generator import AgenticResponseGenerator
+from app.services.agentic.agentic import Agentic
 
 router = APIRouter(
     prefix="/agentic",
@@ -25,6 +24,9 @@ class AgenticResponse(BaseModel):
     """에이전틱 응답 모델"""
     response: str
     metadata: Dict[str, Any]
+
+# 에이전트 인스턴스 생성 (애플리케이션 시작 시 한 번만 초기화)
+agentic = Agentic()
 
 @router.post(
     "",
@@ -46,17 +48,8 @@ async def agentic_handler(request: AgenticRequest) -> AgenticResponse:
         HTTPException: 처리 중 오류가 발생한 경우
     """
     try:
-        # 분류기 초기화
-        classifier = AgenticClassifier()
-        
-        # 응답 생성기 초기화
-        generator = AgenticResponseGenerator()
-        
-        # 질의 분류
-        agentic_type = await classifier.classify(request.query)
-        
-        # 응답 생성
-        result = await generator.generate_response(request.query, agentic_type)
+        # 에이전트 응답 생성
+        result = await agentic.get_response(request.query, request.uid)
         
         # 응답 반환
         return AgenticResponse(
