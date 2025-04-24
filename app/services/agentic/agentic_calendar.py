@@ -8,11 +8,271 @@ import pickle
 import requests
 import json
 import re
+from enum import Enum
+from typing import Dict, Any, List, Optional
+from loguru import logger
 from dotenv import load_dotenv
-load_dotenv()  # .env 파일 자동 로딩
+load_dotenv(".env")  # 프로젝트 루트의 .env 파일 로딩
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+
+
+class CalendarState(str, Enum):
+    """일정 관리 상태"""
+    INITIAL = "initial"  # 초기 상태
+    ADD = "add"  # 일정 추가
+    DELETE = "delete"  # 일정 삭제
+    EDIT = "edit"  # 일정 수정
+    DATE_INPUT = "date_input"  # 날짜 입력
+    TIME_INPUT = "time_input"  # 시간 입력
+    TITLE_INPUT = "title_input"  # 제목 입력
+    CONFIRM = "confirm"  # 확인
+
+
+class AgenticCalendar:
+    """일정 관리 에이전트"""
+    
+    def __init__(self):
+        """일정 관리 에이전트 초기화"""
+        logger.info("[일정 관리] 에이전트 초기화")
+        
+    async def process_query(self, query: str, uid: str, user_states: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        일정 관리 관련 질의 처리
+        
+        Args:
+            query: 사용자 질의
+            uid: 사용자 ID
+            user_states: 사용자별 상태 정보
+            
+        Returns:
+            Dict[str, Any]: 응답 데이터
+        """
+        # 사용자 상태 확인
+        if uid not in user_states:
+            user_states[uid] = {
+                "state": "general",
+                "context": {},
+                "calendar": {
+                    "state": CalendarState.INITIAL,
+                    "collected_info": {}
+                }
+            }
+            
+        calendar_state = user_states[uid]["calendar"]["state"]
+        collected_info = user_states[uid]["calendar"]["collected_info"]
+        
+        logger.info(f"[일정 관리] 현재 상태: {calendar_state}")
+        
+        # 초기 상태일 경우 작업 분류
+        if calendar_state == CalendarState.INITIAL:
+            operation = Input_analysis(query)
+            user_states[uid]["calendar"]["operation"] = operation
+            
+            if operation == "add":
+                user_states[uid]["calendar"]["state"] = CalendarState.DATE_INPUT
+                return {
+                    "response": "일정을 추가합니다. 날짜를 알려주세요 (예: 2025년 5월 10일)",
+                    "metadata": {
+                        "state": "calendar",
+                        "calendar_state": CalendarState.DATE_INPUT.value,
+                        "query": query,
+                        "uid": uid
+                    }
+                }
+            elif operation == "delete":
+                # 일정 목록 표시 후 삭제할 일정 선택
+                Calendar_list()
+                user_states[uid]["calendar"]["state"] = CalendarState.DELETE
+                return {
+                    "response": "삭제할 일정을 알려주세요.",
+                    "metadata": {
+                        "state": "calendar",
+                        "calendar_state": CalendarState.DELETE.value,
+                        "query": query,
+                        "uid": uid
+                    }
+                }
+            elif operation == "edit":
+                # 일정 목록 표시 후 수정할 일정 선택
+                Calendar_list()
+                user_states[uid]["calendar"]["state"] = CalendarState.EDIT
+                return {
+                    "response": "수정할 일정을 알려주세요.",
+                    "metadata": {
+                        "state": "calendar",
+                        "calendar_state": CalendarState.EDIT.value,
+                        "query": query,
+                        "uid": uid
+                    }
+                }
+            else:
+                # 분류할 수 없는 경우
+                return {
+                    "response": "죄송합니다. 일정 명령을 이해하지 못했습니다. 일정 추가, 삭제, 또는 수정을 원하시나요?",
+                    "metadata": {
+                        "state": "calendar",
+                        "calendar_state": CalendarState.INITIAL.value,
+                        "query": query,
+                        "uid": uid
+                    }
+                }
+        
+        # 일정 추가 프로세스
+        elif calendar_state == CalendarState.DATE_INPUT:
+            # 날짜 정보 수집
+            collected_info["date"] = query if "년" in query or "월" in query or "일" in query else None
+            if not collected_info["date"]:
+                return {
+                    "response": "날짜 형식이 맞지 않습니다. 예를 들어 '2025년 5월 10일'과 같이 입력해주세요.",
+                    "metadata": {
+                        "state": "calendar",
+                        "calendar_state": CalendarState.DATE_INPUT.value,
+                        "query": query,
+                        "uid": uid
+                    }
+                }
+            
+            # 다음 단계로 진행
+            user_states[uid]["calendar"]["state"] = CalendarState.TIME_INPUT
+            return {
+                "response": "시간을 알려주세요 (예: 오후 2시 30분)",
+                "metadata": {
+                    "state": "calendar",
+                    "calendar_state": CalendarState.TIME_INPUT.value,
+                    "query": query,
+                    "uid": uid
+                }
+            }
+        
+        elif calendar_state == CalendarState.TIME_INPUT:
+            # 시간 정보 수집
+            collected_info["time"] = query if "시" in query or "분" in query else None
+            if not collected_info["time"]:
+                return {
+                    "response": "시간 형식이 맞지 않습니다. 예를 들어 '오후 2시 30분'과 같이 입력해주세요.",
+                    "metadata": {
+                        "state": "calendar",
+                        "calendar_state": CalendarState.TIME_INPUT.value,
+                        "query": query,
+                        "uid": uid
+                    }
+                }
+            
+            # 다음 단계로 진행
+            user_states[uid]["calendar"]["state"] = CalendarState.TITLE_INPUT
+            return {
+                "response": "일정 제목을 알려주세요.",
+                "metadata": {
+                    "state": "calendar",
+                    "calendar_state": CalendarState.TITLE_INPUT.value,
+                    "query": query,
+                    "uid": uid
+                }
+            }
+        
+        elif calendar_state == CalendarState.TITLE_INPUT:
+            # 제목 정보 수집
+            collected_info["title"] = query
+            
+            # 일정 추가 준비 및 확인 요청
+            user_states[uid]["calendar"]["state"] = CalendarState.CONFIRM
+            
+            datetime_str = f"{collected_info['date']} {collected_info['time']}"
+            return {
+                "response": f"'{collected_info['title']}' 일정을 {datetime_str}에 추가하시겠습니까? (예/아니오)",
+                "metadata": {
+                    "state": "calendar",
+                    "calendar_state": CalendarState.CONFIRM.value,
+                    "query": query,
+                    "uid": uid
+                }
+            }
+        
+        elif calendar_state == CalendarState.CONFIRM:
+            # 확인 응답 처리
+            if "예" in query or "네" in query or "좋아" in query or "추가" in query:
+                # 일정 추가 실행
+                schedule_input = f"{collected_info['date']} {collected_info['time']}에 {collected_info['title']} 일정"
+                make_event = MakeSchedule(schedule_input)
+                add_event(make_event)
+                
+                # 상태 초기화
+                user_states[uid]["calendar"]["state"] = CalendarState.INITIAL
+                user_states[uid]["calendar"]["collected_info"] = {}
+                
+                return {
+                    "response": f"{collected_info['date']} {collected_info['time']}에 '{collected_info['title']}' 일정이 추가되었습니다.",
+                    "metadata": {
+                        "state": "calendar",
+                        "calendar_state": CalendarState.INITIAL.value,
+                        "completed": True,
+                        "query": query,
+                        "uid": uid
+                    }
+                }
+            else:
+                # 취소
+                user_states[uid]["calendar"]["state"] = CalendarState.INITIAL
+                user_states[uid]["calendar"]["collected_info"] = {}
+                
+                return {
+                    "response": "일정 추가가 취소되었습니다.",
+                    "metadata": {
+                        "state": "calendar",
+                        "calendar_state": CalendarState.INITIAL.value,
+                        "query": query,
+                        "uid": uid
+                    }
+                }
+        
+        # 일정 삭제 프로세스
+        elif calendar_state == CalendarState.DELETE:
+            delete_event(query)
+            
+            # 상태 초기화
+            user_states[uid]["calendar"]["state"] = CalendarState.INITIAL
+            
+            return {
+                "response": "일정이 삭제되었습니다.",
+                "metadata": {
+                    "state": "calendar",
+                    "calendar_state": CalendarState.INITIAL.value,
+                    "completed": True,
+                    "query": query,
+                    "uid": uid
+                }
+            }
+        
+        # 일정 수정 프로세스
+        elif calendar_state == CalendarState.EDIT:
+            edit_event(query)
+            
+            # 상태 초기화
+            user_states[uid]["calendar"]["state"] = CalendarState.INITIAL
+            
+            return {
+                "response": "일정이 수정되었습니다.",
+                "metadata": {
+                    "state": "calendar",
+                    "calendar_state": CalendarState.INITIAL.value,
+                    "completed": True,
+                    "query": query,
+                    "uid": uid
+                }
+            }
+        
+        # 예상치 못한 상태
+        return {
+            "response": "죄송합니다. 일정 처리 중 오류가 발생했습니다.",
+            "metadata": {
+                "state": "calendar",
+                "error": "Unknown calendar state",
+                "query": query,
+                "uid": uid
+            }
+        }
 
 ################################################ 캘린더 일정 리스트로 반환
 def Calendar_list():
@@ -103,7 +363,8 @@ def Input_analysis(user_input):
     
     llm = ChatGroq(
     model_name="llama-3.3-70b-versatile",
-    temperature=0.7
+    temperature=0.7,
+    api_key=os.environ.get("GROQ_API_KEY")
     )
     parser = JsonOutputParser(pydantic_object={
         "type": "object",
@@ -194,7 +455,8 @@ def MakeSchedule(user_input):
 
     llm = ChatGroq(
     model_name="llama-3.3-70b-versatile",
-    temperature=0.7
+    temperature=0.7,
+    api_key=os.environ.get("GROQ_API_KEY")
     )
     parser = JsonOutputParser(pydantic_object={
         "type": "object",
@@ -357,7 +619,8 @@ def delete_event(user_input):
 
     llm = ChatGroq(
         model_name="llama-3.3-70b-versatile",
-        temperature=0.7
+        temperature=0.7,
+        api_key=os.environ.get("GROQ_API_KEY")
     )
 
     parser = JsonOutputParser(pydantic_object={
@@ -430,7 +693,8 @@ def edit_event(user_input):
 
     llm = ChatGroq(
         model_name="llama-3.3-70b-versatile",
-        temperature=0.7
+        temperature=0.7,
+        api_key=os.environ.get("GROQ_API_KEY")
     )
 
     parser = JsonOutputParser(pydantic_object={
