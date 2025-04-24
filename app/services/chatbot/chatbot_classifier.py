@@ -23,8 +23,9 @@ class ChatbotClassifier:
     """챗봇 분류기"""
     
     def __init__(self):
+        # 경량 모델로 Groq API 사용
         self.llm_client = get_llm_client(is_lightweight=True)
-        logger.info(f"[분류] 경량 모델 사용: {self.llm_client.model}")
+        logger.info(f"[분류] Groq 경량 모델 사용: {self.llm_client.model}")
     
     async def classify(self, query: str) -> Tuple[QueryType, RAGType]:
         """
@@ -55,10 +56,28 @@ class ChatbotClassifier:
     
     async def _classify_query_type(self, query: str) -> QueryType:
         """질의 유형을 분류합니다."""
+        prompt = f"""
+        Classify the following query into one of these query types:
+        
+        - general: General conversation, simple questions, chit-chat
+        - reasoning: Complex reasoning, analysis, detailed explanations
+        - web_search: Questions about very recent events or specific facts that need web search
+        
+        Query: {query}
+        
+        Return only the type name.
+        """
+        
         try:
-            # TODO: LLM을 활용한 질의 유형 분류 구현
-            # 임시로 모든 질의를 일반 대화로 분류
-            return QueryType.GENERAL
+            response = await self.llm_client.generate(prompt)
+            response = response.strip().lower()
+            
+            if "reasoning" in response:
+                return QueryType.REASONING
+            elif "web_search" in response:
+                return QueryType.WEB_SEARCH
+            else:
+                return QueryType.GENERAL
         except Exception as e:
             logger.error(f"질의 유형 분류 중 오류 발생: {str(e)}")
             return QueryType.GENERAL

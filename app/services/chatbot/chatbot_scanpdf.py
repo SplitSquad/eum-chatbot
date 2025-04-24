@@ -7,7 +7,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 import json
 from dotenv import load_dotenv
-load_dotenv()  # .env 파일 자동 로딩
+load_dotenv(".env")  # 프로젝트 루트의 .env 파일 로드
 
 # ✅ 예제 PDF 파일 경로
 PDF_FILE_PATH = "./학사일정.pdf"
@@ -68,7 +68,8 @@ parsed_text = "📄Text extracted from pdf \n" + "\n---\n".join(text_list) + "\n
 ############################################# ai응답
 llm = ChatGroq(
     model_name="llama-3.3-70b-versatile",
-    temperature=0.7
+    temperature=0.7,
+    api_key=os.environ.get("GROQ_API_KEY")
     )
 
 parser = JsonOutputParser(pydantic_object={

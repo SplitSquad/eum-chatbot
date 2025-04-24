@@ -11,10 +11,9 @@ class ChatbotResponseGenerator:
     
     def __init__(self):
         self.rag_service = RAGService()
-        # 경량 모델 클라이언트는 더 이상 사용하지 않습니다
-        # 모든 응답에 고성능 모델만 사용
+        # 고성능 모델로 Groq API 사용
         self.high_performance_llm = get_llm_client(is_lightweight=False)
-        logger.info(f"[응답 생성기] 고성능 모델 사용: {self.high_performance_llm.model}, 타임아웃: {self.high_performance_llm.timeout}초")
+        logger.info(f"[응답 생성기] Groq 고성능 모델 사용: {self.high_performance_llm.model}, 타임아웃: {self.high_performance_llm.timeout}초")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"[응답 생성기] 디바이스: {self.device}")
     
@@ -66,7 +65,7 @@ class ChatbotResponseGenerator:
             logger.info("[응답 생성기] 프롬프트 생성 완료")
             logger.debug(f"[RESPONSE] Generated prompt: {prompt}")
             
-            # 응답 생성 (고성능 모델 사용)
+            # 응답 생성 (Groq 고성능 모델 사용)
             logger.info(f"[응답 생성기] 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
             response = await self.high_performance_llm.generate(prompt)
             logger.info(f"[응답 생성기] 응답 생성 완료: {len(response)}자")
@@ -105,7 +104,7 @@ Please answer the question based on the information above. Provide a friendly an
             
             logger.debug(f"[RESPONSE] Reasoning prompt: {prompt[:200]}...")
             
-            # 응답 생성
+            # 응답 생성 (Groq 고성능 모델 사용)
             logger.info(f"[응답 생성기] 추론 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
             response = await self.high_performance_llm.generate(prompt)
             if not response:
@@ -126,9 +125,27 @@ Please answer the question based on the information above. Provide a friendly an
     
     async def _generate_web_search_response(self, query: str, rag_type: RAGType) -> str:
         """웹 검색 응답을 생성합니다."""
-        # TODO: 웹 검색 응답 로직 구현
-        logger.info(f"[RESPONSE] Web search not implemented yet for query: {query}")
-        return "Sorry, web search response functionality is still under development."
+        try:
+            logger.info("[응답 생성기] 웹 검색 응답 생성 시작")
+            
+            # 웹 검색 결과는 현재 구현되어 있지 않으므로 설명만 제공
+            prompt = f"""Please respond to the following query that requires up-to-date information:
+
+Question: {query}
+
+Please note that real-time web search is not yet available and explain this limitation politely."""
+            
+            # 응답 생성 (Groq 고성능 모델 사용)
+            logger.info(f"[응답 생성기] 웹 검색 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
+            response = await self.high_performance_llm.generate(prompt)
+            
+            logger.info("[응답 생성기] 웹 검색 응답 생성 완료")
+            logger.info(f"[RESPONSE] Generated web search response: {response}")
+            
+            return response.strip()
+        except Exception as e:
+            logger.error(f"웹 검색 응답 생성 중 오류 발생: {str(e)}")
+            return "Sorry, web search response functionality is still under development."
     
     def _generate_prompt(self, query: str, context: str = "") -> str:
         """프롬프트를 생성합니다."""
