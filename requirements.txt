@@ -4,31 +4,40 @@ uvicorn==0.27.1
 python-multipart==0.0.6
 
 # HTTP 및 비동기 통신
-httpx==0.27.0
+httpx==0.28.1
 aiohttp==3.9.0
-requests==2.31.0
+requests==2.32.3
 
 # 데이터 모델 및 설정
-pydantic==2.6.3
+pydantic==2.11.3
 pydantic-settings==2.2.1
 python-dotenv==1.0.1
 
-# RAG 및 벡터 DB
-chromadb==0.4.24
+# 임베딩 및 모델
 sentence-transformers==2.6.1
-langchain==0.1.0
-langchainhub==0.1.14
-
-# 임베딩 모델
 transformers==4.40.0
 torch==2.2.2
 accelerate==0.28.0
 
-# LLM 클라이언트
-openai==1.12.0
-langchain-openai==0.0.2
+# 벡터 DB
+chromadb==0.4.24
 
-# 로깅 및 유틸리티
+# LangChain 호환 조합 (RAG 핵심 기능 지원)
+langchain==0.1.16
+langchain-core==0.1.35
+langchain-openai==0.0.2
+langchainhub==0.1.14
+langchain-text-splitters==0.0.1
+
+# LLM 클라이언트
+openai==1.76.0
+tiktoken==0.5.2
+
+# 구글 API 클라이언트 (달력 기능용)
+google-api-python-client==2.167.0
+google-auth-oauthlib==1.2.2
+
+# 유틸리티
 loguru==0.7.2
 rich==13.7.1
 

@@ -3,6 +3,7 @@
 from typing import Dict
 import json
 import time
+import re
 from loguru import logger
 from app.core.llm_client import get_llm_client
 
@@ -64,24 +65,74 @@ async def translate_query(query: str) -> Dict[str, str]:
         
         # Extract and process JSON
         parse_start = time.time()
-        json_str = result.strip().strip("```json").strip("```").strip()
-        logger.debug(f"[Preprocess] Translation response: {json_str}")
         
-        data = json.loads(json_str)
-        parse_time = time.time() - parse_start
-        logger.info(f"[Preprocess] JSON parsing time: {parse_time:.2f} seconds")
+        # 정규식을 사용하여 JSON 부분 추출 시도
+        json_pattern = r'```(?:json)?\s*({[\s\S]*?})\s*```'
+        json_match = re.search(json_pattern, result)
         
-        # Log the preprocessed result
-        logger.info(f"[PREPROCESS] Translated query: {data['translated_query']}")
-        logger.info(f"[PREPROCESS] Detected language: {data['lang_code']}")
+        if json_match:
+            json_str = json_match.group(1).strip()
+        else:
+            # JSON 코드 블록을 찾지 못한 경우, 일반 json 형태 찾기 시도
+            json_pattern = r'({[\s\S]*?})' 
+            json_match = re.search(json_pattern, result)
+            if json_match:
+                json_str = json_match.group(1).strip()
+            else:
+                # 기존 로직으로 폴백
+                json_str = result.strip().strip("```json").strip("```").strip()
         
-        total_time = time.time() - start_time
-        logger.info(f"[Preprocess] Total execution time: {total_time:.2f} seconds")
+        logger.debug(f"[Preprocess] Extracted JSON: {json_str}")
         
-        return {
-            "translated_query": data["translated_query"],
-            "lang_code": data["lang_code"]
-        }
+        try:
+            data = json.loads(json_str)
+            parse_time = time.time() - parse_start
+            logger.info(f"[Preprocess] JSON parsing time: {parse_time:.2f} seconds")
+            
+            # Log the preprocessed result
+            logger.info(f"[PREPROCESS] Translated query: {data['translated_query']}")
+            logger.info(f"[PREPROCESS] Detected language: {data['lang_code']}")
+            
+            total_time = time.time() - start_time
+            logger.info(f"[Preprocess] Total execution time: {total_time:.2f} seconds")
+            
+            return {
+                "translated_query": data["translated_query"],
+                "lang_code": data["lang_code"]
+            }
+        except json.JSONDecodeError as e:
+            # 다시 시도: 가능한 문자열 치환을 통해 JSON 형식 수정
+            logger.warning(f"[Preprocess] First JSON parsing attempt failed: {str(e)}")
+            
+            # 따옴표 문제 등을 처리하기 위한 추가 정제
+            json_str = json_str.replace('""', '"')  # 중복 따옴표 제거
+            json_str = re.sub(r'(?<!\\)"(?=\s*[,}])', '\\"', json_str)  # 닫는 따옴표 누락 수정
+            
+            try:
+                data = json.loads(json_str)
+                parse_time = time.time() - parse_start
+                logger.info(f"[Preprocess] JSON parsing time after recovery: {parse_time:.2f} seconds")
+                
+                return {
+                    "translated_query": data["translated_query"],
+                    "lang_code": data["lang_code"]
+                }
+            except json.JSONDecodeError:
+                # 결국 실패한 경우, 수동으로 필드 추출 시도
+                translated_pattern = r'"translated_query"\s*:\s*"([^"]+)"'
+                lang_pattern = r'"lang_code"\s*:\s*"([^"]+)"'
+                
+                translated_match = re.search(translated_pattern, json_str)
+                lang_match = re.search(lang_pattern, json_str)
+                
+                if translated_match and lang_match:
+                    return {
+                        "translated_query": translated_match.group(1),
+                        "lang_code": lang_match.group(1)
+                    }
+                
+                # 여기까지 실패하면 원래 오류 발생
+                raise
     except json.JSONDecodeError as e:
         logger.error(f"[Preprocess] Failed to parse translation response JSON: {str(e)}")
         logger.error(f"[Preprocess] Original response: {result}")
