@@ -765,3 +765,141 @@ WARNING:  WatchFiles detected changes in 'app/services/chatbot/chatbot_classifie
 2025-04-22 15:24:05.408 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_TIMEOUT=60 로드 완료
 [32m2025-04-22 15:24:07.299[0m | [1mINFO    [0m | [36mapp.main[0m:[36m<module>[0m:[36m10[0m - [1mApplication starting up...[0m
 [32m2025-04-22 15:24:07.300[0m | [1mINFO    [0m | [36mapp.main[0m:[36mstartup_event[0m:[36m33[0m - [1m[WORKFLOW] Server started successfully[0m
+WARNING:  WatchFiles detected changes in 'app/services/agentic/agentic.py'. Reloading...
+[32m2025-04-24 10:33:43.847[0m | [1mINFO    [0m | [36mapp.main[0m:[36mshutdown_event[0m:[36m37[0m - [1m[WORKFLOW] Server shutting down[0m
+Loaded settings from .env: LIGHTWEIGHT_OLLAMA_TIMEOUT=20
+2025-04-24 10:33:45.207 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:33:45.207 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_TIMEOUT=20 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_TIMEOUT=60 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_MODEL=gpt-3.5-turbo 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_TIMEOUT=30 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_MODEL=gpt-4 로드 완료
+2025-04-24 10:33:45.208 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_TIMEOUT=60 로드 완료
+WARNING:  WatchFiles detected changes in 'app/services/agentic/agentic.py'. Reloading...
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_TIMEOUT=20 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_TIMEOUT=60 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_MODEL=gpt-3.5-turbo 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_TIMEOUT=30 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_MODEL=gpt-4 로드 완료
+2025-04-24 10:33:46.326 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_TIMEOUT=60 로드 완료
+[32m2025-04-24 10:33:48.122[0m | [1mINFO    [0m | [36mapp.main[0m:[36m<module>[0m:[36m10[0m - [1mApplication starting up...[0m
+[32m2025-04-24 10:33:48.123[0m | [1mINFO    [0m | [36mapp.main[0m:[36mstartup_event[0m:[36m33[0m - [1m[WORKFLOW] Server started successfully[0m
+WARNING:  WatchFiles detected changes in 'app/api/v1/agentic.py'. Reloading...
+[32m2025-04-24 10:34:02.368[0m | [1mINFO    [0m | [36mapp.main[0m:[36mshutdown_event[0m:[36m37[0m - [1m[WORKFLOW] Server shutting down[0m
+Loaded settings from .env: LIGHTWEIGHT_OLLAMA_TIMEOUT=20
+2025-04-24 10:34:03.090 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:34:03.090 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:34:03.090 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:34:03.090 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:34:03.090 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_TIMEOUT=20 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_TIMEOUT=60 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_MODEL=gpt-3.5-turbo 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_TIMEOUT=30 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_MODEL=gpt-4 로드 완료
+2025-04-24 10:34:03.091 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_TIMEOUT=60 로드 완료
+2025-04-24 10:34:04.705 | INFO     | app.core.llm_client:__init__:30 - [OllamaClient] 경량 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=20초
+2025-04-24 10:34:04.705 | INFO     | app.services.agentic.agentic_classifier:__init__:155 - [에이전틱 분류] 경량 모델 사용: gemma3:4b
+2025-04-24 10:34:04.705 | INFO     | app.core.llm_client:__init__:35 - [OllamaClient] 고성능 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=60초
+2025-04-24 10:34:04.705 | INFO     | app.services.agentic.agentic_response_generator:__init__:11 - [에이전틱 응답] 고성능 모델 사용: gemma3:4b
+2025-04-24 10:34:04.705 | INFO     | app.core.llm_client:__init__:30 - [OllamaClient] 경량 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=20초
+2025-04-24 10:34:04.705 | INFO     | app.services.common.postprocessor:__init__:28 - [Postprocess] Using lightweight model: gemma3:4b
+2025-04-24 10:34:04.705 | INFO     | app.services.agentic.agentic:__init__:29 - [에이전트] 초기화 완료
+[32m2025-04-24 10:34:04.724[0m | [1mINFO    [0m | [36mapp.main[0m:[36m<module>[0m:[36m10[0m - [1mApplication starting up...[0m
+[32m2025-04-24 10:34:04.725[0m | [1mINFO    [0m | [36mapp.main[0m:[36mstartup_event[0m:[36m33[0m - [1m[WORKFLOW] Server started successfully[0m
+WARNING:  WatchFiles detected changes in 'app/services/agentic/agentic.py'. Reloading...
+[32m2025-04-24 10:34:17.354[0m | [1mINFO    [0m | [36mapp.main[0m:[36mshutdown_event[0m:[36m37[0m - [1m[WORKFLOW] Server shutting down[0m
+Loaded settings from .env: LIGHTWEIGHT_OLLAMA_TIMEOUT=20
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_TIMEOUT=20 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_TIMEOUT=60 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_MODEL=gpt-3.5-turbo 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_TIMEOUT=30 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_MODEL=gpt-4 로드 완료
+2025-04-24 10:34:18.100 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_TIMEOUT=60 로드 완료
+2025-04-24 10:34:19.489 | INFO     | app.core.llm_client:__init__:30 - [OllamaClient] 경량 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=20초
+2025-04-24 10:34:19.489 | INFO     | app.services.agentic.agentic_classifier:__init__:155 - [에이전틱 분류] 경량 모델 사용: gemma3:4b
+2025-04-24 10:34:19.489 | INFO     | app.core.llm_client:__init__:35 - [OllamaClient] 고성능 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=60초
+2025-04-24 10:34:19.489 | INFO     | app.services.agentic.agentic_response_generator:__init__:11 - [에이전틱 응답] 고성능 모델 사용: gemma3:4b
+2025-04-24 10:34:19.489 | INFO     | app.core.llm_client:__init__:30 - [OllamaClient] 경량 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=20초
+2025-04-24 10:34:19.489 | INFO     | app.services.common.postprocessor:__init__:28 - [Postprocess] Using lightweight model: gemma3:4b
+2025-04-24 10:34:19.489 | INFO     | app.services.agentic.agentic:__init__:29 - [에이전트] 초기화 완료
+[32m2025-04-24 10:34:19.507[0m | [1mINFO    [0m | [36mapp.main[0m:[36m<module>[0m:[36m10[0m - [1mApplication starting up...[0m
+[32m2025-04-24 10:34:19.508[0m | [1mINFO    [0m | [36mapp.main[0m:[36mstartup_event[0m:[36m33[0m - [1m[WORKFLOW] Server started successfully[0m
+WARNING:  WatchFiles detected changes in 'app/services/agentic/agentic.py'. Reloading...
+[32m2025-04-24 10:37:38.715[0m | [1mINFO    [0m | [36mapp.main[0m:[36mshutdown_event[0m:[36m37[0m - [1m[WORKFLOW] Server shutting down[0m
+Loaded settings from .env: LIGHTWEIGHT_OLLAMA_TIMEOUT=20
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_TIMEOUT=20 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_TIMEOUT=60 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_MODEL=gpt-3.5-turbo 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_TIMEOUT=30 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_MODEL=gpt-4 로드 완료
+2025-04-24 10:37:39.465 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_TIMEOUT=60 로드 완료
+2025-04-24 10:37:41.011 | INFO     | app.core.llm_client:__init__:30 - [OllamaClient] 경량 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=20초
+2025-04-24 10:37:41.011 | INFO     | app.services.agentic.agentic_classifier:__init__:155 - [에이전틱 분류] 경량 모델 사용: gemma3:4b
+2025-04-24 10:37:41.012 | INFO     | app.core.llm_client:__init__:35 - [OllamaClient] 고성능 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=60초
+2025-04-24 10:37:41.012 | INFO     | app.services.agentic.agentic_response_generator:__init__:11 - [에이전틱 응답] 고성능 모델 사용: gemma3:4b
+2025-04-24 10:37:41.012 | INFO     | app.core.llm_client:__init__:30 - [OllamaClient] 경량 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=20초
+2025-04-24 10:37:41.012 | INFO     | app.services.common.postprocessor:__init__:28 - [Postprocess] Using lightweight model: gemma3:4b
+2025-04-24 10:37:41.012 | INFO     | app.services.agentic.agentic:__init__:28 - [에이전트] 초기화 완료
+[32m2025-04-24 10:37:41.037[0m | [1mINFO    [0m | [36mapp.main[0m:[36m<module>[0m:[36m10[0m - [1mApplication starting up...[0m
+[32m2025-04-24 10:37:41.038[0m | [1mINFO    [0m | [36mapp.main[0m:[36mstartup_event[0m:[36m33[0m - [1m[WORKFLOW] Server started successfully[0m
+WARNING:  WatchFiles detected changes in 'app/services/agentic/agentic.py'. Reloading...
+[32m2025-04-24 10:37:56.700[0m | [1mINFO    [0m | [36mapp.main[0m:[36mshutdown_event[0m:[36m37[0m - [1m[WORKFLOW] Server shutting down[0m
+Loaded settings from .env: LIGHTWEIGHT_OLLAMA_TIMEOUT=20
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_LLM_PROVIDER=ollama 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OLLAMA_TIMEOUT=20 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_URL=http://localhost:11434 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_MODEL=gemma3:4b 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OLLAMA_TIMEOUT=60 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_MODEL=gpt-3.5-turbo 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 LIGHTWEIGHT_OPENAI_TIMEOUT=30 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_API_KEY= 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_MODEL=gpt-4 로드 완료
+2025-04-24 10:37:57.498 | INFO     | app.config.app_config:get_env_var:59 - 환경변수 HIGH_PERFORMANCE_OPENAI_TIMEOUT=60 로드 완료
+2025-04-24 10:37:59.021 | INFO     | app.core.llm_client:__init__:30 - [OllamaClient] 경량 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=20초
+2025-04-24 10:37:59.021 | INFO     | app.services.agentic.agentic_classifier:__init__:155 - [에이전틱 분류] 경량 모델 사용: gemma3:4b
+2025-04-24 10:37:59.021 | INFO     | app.core.llm_client:__init__:35 - [OllamaClient] 고성능 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=60초
+2025-04-24 10:37:59.021 | INFO     | app.services.agentic.agentic_response_generator:__init__:11 - [에이전틱 응답] 고성능 모델 사용: gemma3:4b
+2025-04-24 10:37:59.021 | INFO     | app.core.llm_client:__init__:30 - [OllamaClient] 경량 모델 초기화 완료: URL=http://localhost:11434, MODEL=gemma3:4b, TIMEOUT=20초
+2025-04-24 10:37:59.021 | INFO     | app.services.common.postprocessor:__init__:28 - [Postprocess] Using lightweight model: gemma3:4b
+2025-04-24 10:37:59.021 | INFO     | app.services.agentic.agentic:__init__:28 - [에이전트] 초기화 완료
+[32m2025-04-24 10:37:59.040[0m | [1mINFO    [0m | [36mapp.main[0m:[36m<module>[0m:[36m10[0m - [1mApplication starting up...[0m
+[32m2025-04-24 10:37:59.041[0m | [1mINFO    [0m | [36mapp.main[0m:[36mstartup_event[0m:[36m33[0m - [1m[WORKFLOW] Server started successfully[0m
