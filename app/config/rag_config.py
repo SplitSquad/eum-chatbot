@@ -16,8 +16,8 @@ class RAGConfig(BaseModel):
     # 기본 설정
     CHROMA_DB_PATH: ClassVar[str] = "data/chroma"
     EMBEDDING_MODEL: ClassVar[str] = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    SEARCH_K: ClassVar[int] = 3
-    SEARCH_THRESHOLD: ClassVar[float] = 0.7
+    SEARCH_K: ClassVar[int] = 5  # 검색 결과 수 증가
+    SEARCH_THRESHOLD: ClassVar[float] = 0.5  # 임계값 낮춤
     
     # 도메인별 설정
     DOMAIN_CONFIGS: ClassVar[Dict[RAGDomain, Dict[str, Any]]] = {

@@ -30,7 +30,11 @@ class RAGService:
                 # 도메인별 컬렉션 초기화
                 try:
                     self.collections[rag_type] = client.get_collection(config["collection_name"])
+                    # 컬렉션 정보 로깅
+                    count = self.collections[rag_type].count()
+                    logger.info(f"[RAG] {rag_type.value} 도메인 컬렉션 로드 완료: {count}개의 문서")
                 except ValueError:
+                    logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션이 존재하지 않습니다.")
                     self.collections[rag_type] = client.create_collection(config["collection_name"])
                 
                 logger.info(f"[RAG] {rag_type.value} 도메인 초기화 완료: {config['vectorstore_path']}")
@@ -80,6 +84,17 @@ class RAGService:
         try:
             logger.info(f"[RAG] {rag_type.value} 도메인에서 문서 검색 시작: {query}")
             
+            # 컬렉션 존재 여부 확인
+            if rag_type not in self.collections:
+                logger.error(f"[RAG] {rag_type.value} 도메인 컬렉션이 존재하지 않습니다.")
+                return []
+            
+            # 컬렉션 문서 수 확인
+            count = self.collections[rag_type].count()
+            if count == 0:
+                logger.warning(f"[RAG] {rag_type.value} 도메인에 문서가 없습니다.")
+                return []
+            
             # 질의 임베딩 생성
             query_embedding = self.embeddings.encode([query])[0]
             
@@ -89,6 +104,11 @@ class RAGService:
                 n_results=self.config.SEARCH_K
             )
             
+            # 검색 결과 로깅
+            logger.info(f"[RAG] {rag_type.value} 도메인 검색 결과:")
+            for i, (doc, score) in enumerate(zip(results['documents'][0], results['distances'][0])):
+                logger.info(f"[RAG] 문서 {i+1} (유사도: {score:.4f}): {doc[:100]}...")
+            
             # 임계값 이상의 문서만 반환
             filtered_docs = []
             for doc, score in zip(results['documents'][0], results['distances'][0]):
@@ -96,9 +116,6 @@ class RAGService:
                     filtered_docs.append(doc)
             
             logger.info(f"[RAG] {rag_type.value} 도메인에서 {len(filtered_docs)}개의 문서가 검색되었습니다.")
-            for i, doc in enumerate(filtered_docs):
-                logger.info(f"[RAG] 문서 {i+1}: {doc[:100]}...")
-            
             return filtered_docs
         except Exception as e:
             logger.error(f"문서 검색 중 오류 발생: {str(e)}")
@@ -132,6 +149,7 @@ class RAGService:
             # 컨텍스트 생성
             context = "\n\n".join(docs)
             logger.info(f"[RAG] 컨텍스트 생성 완료: {len(context)}자")
+            logger.debug(f"[RAG] 생성된 컨텍스트: {context[:200]}...")
             
             return context
         except Exception as e:

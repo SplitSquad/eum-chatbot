@@ -1,9 +1,15 @@
 # app/main.py
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from app.api.v1 import chatbot
 from app.config.logging_config import setup_logging
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
+import os
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 # Setup logging
 logger = setup_logging()
@@ -34,3 +40,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("[WORKFLOW] Server shutting down")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

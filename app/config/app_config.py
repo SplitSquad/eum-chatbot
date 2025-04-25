@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from loguru import logger
+from typing import Any, Optional
 
 # .env 파일 로드
 load_dotenv()
@@ -56,14 +57,26 @@ class Settings(BaseModel):
     GROQ_HIGHPERFORMANCE_MODEL: str
 
 
-# .env 파일에서 환경변수 로드 또는 기본값 사용
-def get_env_var(var_name, default_value):
-    value = os.getenv(var_name)
-    if value is None:
-        logger.warning(f"환경변수 {var_name}을 찾을 수 없어 기본값 {default_value}를 사용합니다.")
+def get_env_var(key: str, default_value: Optional[Any] = None) -> Any:
+    """
+    환경 변수를 가져옵니다.
+    
+    Args:
+        key: 환경 변수 키
+        default_value: 환경 변수가 없을 경우 반환할 기본값
+        
+    Returns:
+        Any: 환경 변수 값 또는 기본값
+    """
+    try:
+        value = os.getenv(key)
+        if value is None:
+            logger.warning(f"환경 변수 {key}가 설정되지 않았습니다. 기본값을 사용합니다: {default_value}")
+            return default_value
+        return value
+    except Exception as e:
+        logger.error(f"환경 변수 {key}를 가져오는 중 오류가 발생했습니다: {str(e)}")
         return default_value
-    logger.info(f"환경변수 {var_name}={value} 로드 완료")
-    return value
 
 
 # 설정 객체 생성
