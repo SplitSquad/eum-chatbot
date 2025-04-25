@@ -5,12 +5,14 @@ import torch
 from app.core.llm_client import get_llm_client
 from app.services.chatbot.chatbot_classifier import QueryType, RAGType
 from app.services.common.rag_service import RAGService
+from app.services.common.web_search_service import WebSearchService
 
 class ChatbotResponseGenerator:
     """챗봇 응답 생성기"""
     
     def __init__(self):
         self.rag_service = RAGService()
+        self.web_search_service = WebSearchService()
         # 고성능 모델로 Groq API 사용
         self.high_performance_llm = get_llm_client(is_lightweight=False)
         logger.info(f"[응답 생성기] Groq 고성능 모델 사용: {self.high_performance_llm.model}, 타임아웃: {self.high_performance_llm.timeout}초")
@@ -123,17 +125,42 @@ Please answer the question based on the information above. Provide a friendly an
                 return f"Sorry, the response generation timed out after {self.high_performance_llm.timeout} seconds. Please try again later."
             return "Sorry, an error occurred while generating the response."
     
-    async def _generate_web_search_response(self, query: str, rag_type: RAGType) -> str:
+    async def _generate_web_search_response(self, query: str, english_query: str, rag_type: RAGType) -> str:
         """웹 검색 응답을 생성합니다."""
         try:
             logger.info("[응답 생성기] 웹 검색 응답 생성 시작")
+            logger.debug(f"[응답 생성기] 원본 쿼리: {query}")
+            logger.debug(f"[응답 생성기] 영어 쿼리: {english_query}")
             
-            # 웹 검색 결과는 현재 구현되어 있지 않으므로 설명만 제공
-            prompt = f"""Please respond to the following query that requires up-to-date information:
+            # 웹 검색 실행
+            web_context = await self.web_search_service.get_context(english_query)
+            
+            # RAG 컨텍스트도 함께 사용 (있는 경우)
+            rag_context = ""
+            if rag_type != RAGType.NONE:
+                rag_context = await self.rag_service.get_context(rag_type, query)
+            
+            # 컨텍스트 결합
+            context = ""
+            if web_context and rag_context:
+                context = f"Web Search Results:\n{web_context}\n\nAdditional Information:\n{rag_context}"
+            elif web_context:
+                context = f"Web Search Results:\n{web_context}"
+            elif rag_context:
+                context = f"Additional Information:\n{rag_context}"
+            
+            if not context:
+                logger.warning("[응답 생성기] 검색 결과가 없습니다.")
+                return "Sorry, no information could be found for this question."
+            
+            # 프롬프트 생성
+            prompt = f"""Based on the following information, please provide a comprehensive answer to the question:
+
+{context}
 
 Question: {query}
 
-Please note that real-time web search is not yet available and explain this limitation politely."""
+Please provide a clear and accurate response based on the information above."""
             
             # 응답 생성 (Groq 고성능 모델 사용)
             logger.info(f"[응답 생성기] 웹 검색 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
@@ -145,7 +172,7 @@ Please note that real-time web search is not yet available and explain this limi
             return response.strip()
         except Exception as e:
             logger.error(f"웹 검색 응답 생성 중 오류 발생: {str(e)}")
-            return "Sorry, web search response functionality is still under development."
+            return "Sorry, an error occurred while generating the web search response."
     
     def _generate_prompt(self, query: str, context: str = "") -> str:
         """프롬프트를 생성합니다."""
