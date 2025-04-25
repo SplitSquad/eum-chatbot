@@ -46,16 +46,26 @@ async def chatbot_handler(request: ChatbotRequest) -> ChatbotResponse:
         HTTPException: 처리 중 오류가 발생한 경우
     """
     try:
-        # 챗봇 초기화
-        chatbot = Chatbot()
+        # 분류기와 응답 생성기 초기화
+        classifier = ChatbotClassifier()
+        response_generator = ChatbotResponseGenerator()
+        
+        # 질의 분류
+        query_type, rag_type = await classifier.classify(request.query)
+        logger.info(f"[API] 질의 분류 결과 - 유형: {query_type.value}, RAG: {rag_type.value}")
         
         # 응답 생성
-        result = await chatbot.get_response(request.query, request.uid)
+        response = await response_generator.generate_response(request.query, query_type, rag_type)
+        logger.info(f"[API] 응답 생성 완료: {len(response)}자")
         
         # 응답 반환
         return ChatbotResponse(
-            response=result["response"],
-            metadata=result["metadata"]
+            response=response,
+            metadata={
+                "query_type": query_type.value,
+                "rag_type": rag_type.value,
+                "uid": request.uid
+            }
         )
     except Exception as e:
         logger.error(f"챗봇 처리 중 오류 발생: {str(e)}")

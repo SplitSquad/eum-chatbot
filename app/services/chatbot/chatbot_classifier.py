@@ -59,23 +59,35 @@ class ChatbotClassifier:
         prompt = f"""
         Classify the following query into one of these query types:
         
-        - general: General conversation, simple questions, chit-chat
-        - reasoning: Complex reasoning, analysis, detailed explanations
-        - web_search: Questions about very recent events or specific facts that need web search
+        - web_search: Questions about current events, recent trends, latest news, or real-time information that requires up-to-date data from the internet. Examples:
+          * "최근 한국의 IT 산업 동향은 어떤가요?"
+          * "요즘 가장 인기있는 앱은 무엇인가요?"
+          * "최신 기술 트렌드가 궁금해요"
+        
+        - reasoning: Questions that require analysis, interpretation, or complex explanations based on existing knowledge. Examples:
+          * "한국의 의료보험 시스템의 장단점을 설명해주세요"
+          * "비자 신청 절차가 어떻게 되나요?"
+          * "세금 신고는 어떻게 해야 하나요?"
+        
+        - general: Simple questions, greetings, or casual conversation that don't require real-time data or complex analysis. Examples:
+          * "안녕하세요"
+          * "오늘 날씨 좋네요"
+          * "한국어로 '감사합니다'는 영어로 뭔가요?"
         
         Query: {query}
         
-        Return only the type name.
+        Return only the type name (web_search, reasoning, or general).
         """
         
         try:
             response = await self.llm_client.generate(prompt)
             response = response.strip().lower()
+            logger.debug(f"[분류] 질의 유형 분류 응답: {response}")
             
-            if "reasoning" in response:
-                return QueryType.REASONING
-            elif "web_search" in response:
+            if "web_search" in response:
                 return QueryType.WEB_SEARCH
+            elif "reasoning" in response:
+                return QueryType.REASONING
             else:
                 return QueryType.GENERAL
         except Exception as e:
@@ -103,6 +115,7 @@ class ChatbotClassifier:
         try:
             response = await self.llm_client.generate(prompt)
             response = response.strip().lower()
+            logger.debug(f"[분류] RAG 유형 분류 응답: {response}")
             
             try:
                 return RAGType(response)
