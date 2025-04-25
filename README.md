@@ -22,8 +22,7 @@ eum-chatbot/
 ├── app/
 │   ├── api/
 │   │   └── v1/
-│   │       ├── chatbot.py      # 챗봇 API 엔드포인트
-│   │       └── agentic.py      # 에이전트 API 엔드포인트
+│   │       └── chatbot.py      # 챗봇 API 엔드포인트
 │   ├── core/
 │   │   └── llm_client.py       # LLM 클라이언트
 │   ├── services/
@@ -31,9 +30,6 @@ eum-chatbot/
 │   │   │   ├── chatbot.py
 │   │   │   ├── chatbot_classifier.py
 │   │   │   └── chatbot_rag_service.py
-│   │   ├── agentic/            # 에이전트 관련 서비스
-│   │   │   ├── agentic.py
-│   │   │   └── agentic_classifier.py
 │   │   └── common/             # 공통 서비스
 │   │       ├── preprocessor.py
 │   │       └── postprocessor.py
@@ -104,18 +100,6 @@ Content-Type: application/json
 }
 ```
 
-### 에이전트 API
-
-```
-POST /api/v1/agentic
-Content-Type: application/json
-
-{
-    "query": "건강보험 자격 취득은 어떻게 하나요?",
-    "uid": "user_id"
-}
-```
-
 ## 코드 컨벤션
 
 ### 1. 디렉토리 구조
@@ -124,7 +108,6 @@ Content-Type: application/json
   - `core/`: 핵심 기능
   - `services/`: 비즈니스 로직
     - `chatbot/`: 챗봇 관련 서비스
-    - `agentic/`: 에이전트 관련 서비스
     - `common/`: 공통 서비스
   - `config/`: 설정 파일
 
