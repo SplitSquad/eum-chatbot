@@ -125,54 +125,62 @@ Please answer the question based on the information above. Provide a friendly an
                 return f"Sorry, the response generation timed out after {self.high_performance_llm.timeout} seconds. Please try again later."
             return "Sorry, an error occurred while generating the response."
     
-    async def _generate_web_search_response(self, query: str, english_query: str, rag_type: RAGType) -> str:
+    async def _generate_web_search_response(self, query: str, rag_type: RAGType) -> str:
         """웹 검색 응답을 생성합니다."""
         try:
             logger.info("[응답 생성기] 웹 검색 응답 생성 시작")
-            logger.debug(f"[응답 생성기] 원본 쿼리: {query}")
-            logger.debug(f"[응답 생성기] 영어 쿼리: {english_query}")
+            logger.info(f"[응답 생성기] 검색 질의: {query}")
             
             # 웹 검색 실행
-            web_context = await self.web_search_service.get_context(english_query)
+            web_context = await self.web_search_service.get_context(query)
+            logger.info(f"[응답 생성기] 웹 검색 컨텍스트 생성 완료: {len(web_context) if web_context else 0}자")
             
             # RAG 컨텍스트도 함께 사용 (있는 경우)
             rag_context = ""
             if rag_type != RAGType.NONE:
                 rag_context = await self.rag_service.get_context(rag_type, query)
+                if rag_context:
+                    logger.info(f"[응답 생성기] RAG 컨텍스트 생성 완료: {len(rag_context)}자")
             
             # 컨텍스트 결합
             context = ""
             if web_context and rag_context:
-                context = f"Web Search Results:\n{web_context}\n\nAdditional Information:\n{rag_context}"
+                context = f"웹 검색 결과:\n{web_context}\n\n추가 정보:\n{rag_context}"
             elif web_context:
-                context = f"Web Search Results:\n{web_context}"
+                context = f"웹 검색 결과:\n{web_context}"
             elif rag_context:
-                context = f"Additional Information:\n{rag_context}"
+                context = f"추가 정보:\n{rag_context}"
             
             if not context:
                 logger.warning("[응답 생성기] 검색 결과가 없습니다.")
-                return "Sorry, no information could be found for this question."
+                return "죄송합니다. 해당 질문에 대한 정보를 찾을 수 없습니다."
             
             # 프롬프트 생성
-            prompt = f"""Based on the following information, please provide a comprehensive answer to the question:
+            prompt = f"""다음 정보를 바탕으로 질문에 대한 포괄적인 답변을 제공해주세요:
 
 {context}
 
-Question: {query}
+질문: {query}
 
-Please provide a clear and accurate response based on the information above."""
+위 정보를 바탕으로 다음 사항을 포함하여 명확하고 정확한 답변을 제공해주세요:
+1. 가격 정보가 있는 경우, 최저가와 평균가를 포함하여 설명
+2. 날짜/기간 정보가 있는 경우, 해당 정보를 포함
+3. 항공사 정보가 있는 경우, 주요 항공사를 언급
+4. 예약/예매 방법이 있는 경우, 간단히 설명
+5. 가능한 한 최신 정보를 중심으로 답변
+6. 정보의 출처를 명확히 하되, 구체적인 URL은 제외"""
             
             # 응답 생성 (Groq 고성능 모델 사용)
             logger.info(f"[응답 생성기] 웹 검색 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
             response = await self.high_performance_llm.generate(prompt)
             
             logger.info("[응답 생성기] 웹 검색 응답 생성 완료")
-            logger.info(f"[RESPONSE] Generated web search response: {response}")
+            logger.info(f"[응답 생성기] 생성된 응답: {response[:200]}...")
             
             return response.strip()
         except Exception as e:
             logger.error(f"웹 검색 응답 생성 중 오류 발생: {str(e)}")
-            return "Sorry, an error occurred while generating the web search response."
+            return "죄송합니다. 응답 생성 중 오류가 발생했습니다."
     
     def _generate_prompt(self, query: str, context: str = "") -> str:
         """프롬프트를 생성합니다."""
