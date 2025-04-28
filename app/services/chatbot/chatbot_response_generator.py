@@ -158,17 +158,9 @@ Please answer the question based on the information above. Provide a friendly an
             # 프롬프트 생성
             prompt = f"""다음 정보를 바탕으로 질문에 대한 포괄적인 답변을 제공해주세요:
 
-{context}
+웹 및 RAG 검색 결과: {context}
 
-질문: {query}
-
-위 정보를 바탕으로 다음 사항을 포함하여 명확하고 정확한 답변을 제공해주세요:
-1. 가격 정보가 있는 경우, 최저가와 평균가를 포함하여 설명
-2. 날짜/기간 정보가 있는 경우, 해당 정보를 포함
-3. 항공사 정보가 있는 경우, 주요 항공사를 언급
-4. 예약/예매 방법이 있는 경우, 간단히 설명
-5. 가능한 한 최신 정보를 중심으로 답변
-6. 정보의 출처를 명확히 하되, 구체적인 URL은 제외"""
+질문: {query}"""
             
             # 응답 생성 (Groq 고성능 모델 사용)
             logger.info(f"[응답 생성기] 웹 검색 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")

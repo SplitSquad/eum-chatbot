@@ -27,7 +27,7 @@ class WebSearchService:
                 self.google_service = build("customsearch", "v1", developerKey=self.google_api_key)
                 logger.info("[웹 검색] Google Search API 초기화 완료")
                 logger.debug(f"[웹 검색] Google CSE ID: {self.google_cse_id}")
-                logger.debug(f"[웹 검색] Google API 키: {self.google_api_key[:5]}...")
+                logger.debug(f"[웹 검색] Google API 키: {self.google_api_key[:20]}...")
             except Exception as e:
                 logger.error(f"[웹 검색] Google Search API 초기화 실패: {str(e)}")
                 raise
