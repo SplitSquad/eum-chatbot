@@ -6,6 +6,7 @@ from app.core.llm_client import get_llm_client
 from app.services.chatbot.chatbot_classifier import QueryType, RAGType
 from app.services.common.rag_service import RAGService
 from app.services.common.web_search_service import WebSearchService
+from app.services.common.postprocessor import Postprocessor
 
 class ChatbotResponseGenerator:
     """챗봇 응답 생성기"""
@@ -13,13 +14,14 @@ class ChatbotResponseGenerator:
     def __init__(self):
         self.rag_service = RAGService()
         self.web_search_service = WebSearchService()
+        self.postprocessor = Postprocessor()
         # 고성능 모델로 Groq API 사용
         self.high_performance_llm = get_llm_client(is_lightweight=False)
         logger.info(f"[응답 생성기] Groq 고성능 모델 사용: {self.high_performance_llm.model}, 타임아웃: {self.high_performance_llm.timeout}초")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"[응답 생성기] 디바이스: {self.device}")
     
-    async def generate_response(self, query: str, query_type: QueryType, rag_type: RAGType) -> str:
+    async def generate_response(self, query: str, query_type: QueryType, rag_type: RAGType, lang_code: str) -> str:
         """
         질의에 대한 응답을 생성합니다.
         
@@ -27,6 +29,7 @@ class ChatbotResponseGenerator:
             query: 사용자 질의
             query_type: 질의 유형
             rag_type: RAG 유형
+            lang_code: 언어 코드
             
         Returns:
             str: 생성된 응답
@@ -35,13 +38,14 @@ class ChatbotResponseGenerator:
             logger.info(f"[RESPONSE] Input query (English): {query}")
             logger.info(f"[RESPONSE] Query type: {query_type.value}")
             logger.info(f"[RESPONSE] RAG type: {rag_type.value}")
+            logger.info(f"[RESPONSE] Language code: {lang_code}")
             
             if query_type == QueryType.REASONING:
-                return await self._generate_reasoning_response(query, rag_type)
+                return await self._generate_reasoning_response(query, rag_type, lang_code)
             elif query_type == QueryType.WEB_SEARCH:
-                return await self._generate_web_search_response(query, rag_type)
+                return await self._generate_web_search_response(query, rag_type, lang_code)
             elif query_type == QueryType.GENERAL:
-                return await self._generate_general_response(query, rag_type)
+                return await self._generate_general_response(query, rag_type, lang_code)
             else:
                 return "Sorry, currently only general conversation, reasoning, and web search type questions can be processed."
                 
@@ -49,7 +53,7 @@ class ChatbotResponseGenerator:
             logger.error(f"응답 생성 중 오류 발생: {str(e)}")
             return "Sorry, an error occurred while generating the response."
     
-    async def _generate_general_response(self, query: str, rag_type: RAGType) -> str:
+    async def _generate_general_response(self, query: str, rag_type: RAGType, lang_code: str) -> str:
         """일반 대화 응답을 생성합니다."""
         try:
             # RAG 컨텍스트 생성
@@ -70,6 +74,16 @@ class ChatbotResponseGenerator:
             # 응답 생성 (Groq 고성능 모델 사용)
             logger.info(f"[응답 생성기] 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
             response = await self.high_performance_llm.generate(prompt)
+            
+            # 후처리 적용
+            if response:
+                postprocessed = await self.postprocessor.postprocess(
+                    response=response,
+                    source_lang=lang_code,
+                    rag_type=rag_type.value
+                )
+                response = postprocessed["response"]
+            
             logger.info(f"[응답 생성기] 응답 생성 완료: {len(response)}자")
             logger.info(f"[RESPONSE] Generated response: {response}")
             
@@ -81,7 +95,7 @@ class ChatbotResponseGenerator:
                 return f"Sorry, the response generation timed out after {self.high_performance_llm.timeout} seconds. Please try again later."
             return "Sorry, an error occurred while generating the response."
     
-    async def _generate_reasoning_response(self, query: str, rag_type: RAGType) -> str:
+    async def _generate_reasoning_response(self, query: str, rag_type: RAGType, lang_code: str) -> str:
         """추론 응답을 생성합니다."""
         try:
             logger.info("[응답 생성기] 추론 응답 생성 시작")
@@ -113,6 +127,15 @@ Please answer the question based on the information above. Provide a friendly an
                 logger.error("[응답 생성기] LLM 응답 생성 실패")
                 return "Sorry, an error occurred while generating the response."
             
+            # 후처리 적용
+            if response:
+                postprocessed = await self.postprocessor.postprocess(
+                    response=response,
+                    source_lang=lang_code,
+                    rag_type=rag_type.value
+                )
+                response = postprocessed["response"]
+            
             logger.info("[응답 생성기] 추론 응답 생성 완료")
             logger.info(f"[RESPONSE] Generated reasoning response: {response}")
             
@@ -125,11 +148,12 @@ Please answer the question based on the information above. Provide a friendly an
                 return f"Sorry, the response generation timed out after {self.high_performance_llm.timeout} seconds. Please try again later."
             return "Sorry, an error occurred while generating the response."
     
-    async def _generate_web_search_response(self, query: str, rag_type: RAGType) -> str:
+    async def _generate_web_search_response(self, query: str, rag_type: RAGType, lang_code: str) -> str:
         """웹 검색 응답을 생성합니다."""
         try:
             logger.info("[응답 생성기] 웹 검색 응답 생성 시작")
             logger.info(f"[응답 생성기] 검색 질의: {query}")
+            logger.info(f"[응답 생성기] 언어 코드: {lang_code}")
             
             # 웹 검색 실행
             web_context = await self.web_search_service.get_context(query)
@@ -165,6 +189,15 @@ Please answer the question based on the information above. Provide a friendly an
             # 응답 생성 (Groq 고성능 모델 사용)
             logger.info(f"[응답 생성기] 웹 검색 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
             response = await self.high_performance_llm.generate(prompt)
+            
+            # 후처리 적용 (언어 코드와 RAG 타입 전달)
+            if response:
+                postprocessed = await self.postprocessor.postprocess(
+                    response=response,
+                    source_lang=lang_code,  # preprocessor에서 추출한 언어 코드 사용
+                    rag_type=rag_type.value
+                )
+                response = postprocessed["response"]
             
             logger.info("[응답 생성기] 웹 검색 응답 생성 완료")
             logger.info(f"[응답 생성기] 생성된 응답: {response[:200]}...")

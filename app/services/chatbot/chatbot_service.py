@@ -3,7 +3,6 @@ from loguru import logger
 from app.core.llm_client import get_llm_client
 from app.services.chatbot.chatbot_classifier import ChatbotClassifier, QueryType, RAGType
 from app.services.chatbot.chatbot_rag_service import ChatbotRAGService
-from app.services.common.translator import Translator
 from app.services.chatbot.chatbot_response_generator import ChatbotResponseGenerator
 from app.models.chatbot_response import ChatbotResponse, ChatbotResponseData
 
@@ -12,7 +11,6 @@ class ChatbotService:
     
     def __init__(self):
         self.classifier = ChatbotClassifier()
-        self.translator = Translator()
         self.response_generator = ChatbotResponseGenerator()
         
     async def process_query(self, query: str, uid: str) -> ChatbotResponse:

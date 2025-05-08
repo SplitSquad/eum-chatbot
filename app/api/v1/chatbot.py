@@ -6,6 +6,7 @@ from typing import Dict, Any
 from loguru import logger
 from app.services.chatbot.chatbot_classifier import ChatbotClassifier, QueryType, RAGType
 from app.services.chatbot.chatbot_response_generator import ChatbotResponseGenerator
+from app.services.common.preprocessor import translate_query
 
 router = APIRouter(
     prefix="/chatbot",
@@ -50,12 +51,19 @@ async def chatbot_handler(request: ChatbotRequest) -> ChatbotResponse:
         classifier = ChatbotClassifier()
         response_generator = ChatbotResponseGenerator()
         
+        # 언어 감지 및 번역
+        logger.info(f"[API] 언어 감지 및 번역 시작: {request.query}")
+        translation_result = await translate_query(request.query)
+        source_lang = translation_result["lang_code"]
+        english_query = translation_result["translated_query"]
+        logger.info(f"[API] 언어 감지 및 번역 완료 - 소스 언어: {source_lang}, 영어 번역: {english_query}")
+        
         # 질의 분류
-        query_type, rag_type = await classifier.classify(request.query)
+        query_type, rag_type = await classifier.classify(english_query)
         logger.info(f"[API] 질의 분류 결과 - 유형: {query_type.value}, RAG: {rag_type.value}")
         
         # 응답 생성
-        response = await response_generator.generate_response(request.query, query_type, rag_type)
+        response = await response_generator.generate_response(english_query, query_type, rag_type, source_lang)
         logger.info(f"[API] 응답 생성 완료: {len(response)}자")
         
         # 응답 반환
@@ -64,7 +72,9 @@ async def chatbot_handler(request: ChatbotRequest) -> ChatbotResponse:
             metadata={
                 "query_type": query_type.value,
                 "rag_type": rag_type.value,
-                "uid": request.uid
+                "uid": request.uid,
+                "source_lang": source_lang,
+                "english_query": english_query
             }
         )
     except Exception as e:
