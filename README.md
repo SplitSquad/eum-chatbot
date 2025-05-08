@@ -83,7 +83,7 @@ cp .env.example .env
 # .env 파일을 수정하여 필요한 설정을 입력
 
 # 서버 실행
-PYTHONPATH=$PYTHONPATH:. uvicorn app.main:app --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ## API 엔드포인트

@@ -25,7 +25,7 @@ class ChatbotClassifier:
     def __init__(self):
         # 경량 모델로 Groq API 사용
         self.llm_client = get_llm_client(is_lightweight=True)
-        logger.info(f"[분류] Groq 경량 모델 사용: {self.llm_client.model}")
+        logger.info(f"[분류] LLM 경량 모델 사용: {self.llm_client.model}")
     
     async def classify(self, query: str) -> Tuple[QueryType, RAGType]:
         """
