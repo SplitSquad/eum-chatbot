@@ -80,8 +80,35 @@ class Postprocessor:
         except Exception as e:
             logger.error(f"[Postprocess] Error during post-processing: {str(e)}")
             logger.error(f"[POSTPROCESS] Returning original response due to error")
+            
+            # 에러 메시지도 원래 언어로 번역
+            error_message = "Sorry, an error occurred while generating the response."
+            if "타임아웃" in str(e):
+                error_message = f"Sorry, the response generation timed out after {self.llm_client.timeout} seconds. Please try again later."
+            
+            if source_lang != 'en':
+                try:
+                    language_name = LANGUAGE_CODE_MAP.get(source_lang, source_lang)
+                    prompt = f"""
+                    Translate the following English error message to {language_name}. 
+                    Keep the meaning and tone exactly the same.
+                    Only return the translated text without any additional explanation.
+                    
+                    Text to translate:
+                    {error_message}
+                    """
+                    
+                    translated_error = await self.llm_client.generate(prompt)
+                    return {
+                        "response": translated_error,
+                        "used_rag": False,
+                        "rag_type": None
+                    }
+                except Exception as translation_error:
+                    logger.error(f"[Postprocess] Error during error message translation: {str(translation_error)}")
+            
             return {
-                "response": response,  # Return original response if translation fails
+                "response": error_message,
                 "used_rag": False,
                 "rag_type": None
             } 
