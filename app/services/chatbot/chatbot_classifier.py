@@ -57,27 +57,35 @@ class ChatbotClassifier:
     async def _classify_query_type(self, query: str) -> QueryType:
         """질의 유형을 분류합니다."""
         prompt = f"""
-        Classify the following query into one of these query types:
-        
-        - web_search: Questions about current events, recent trends, latest news, or real-time information that requires up-to-date data from the internet. Examples:
-          * "최근 한국의 IT 산업 동향은 어떤가요?"
-          * "요즘 가장 인기있는 앱은 무엇인가요?"
-          * "최신 기술 트렌드가 궁금해요"
-        
-        - reasoning: Questions that require analysis, interpretation, or complex explanations based on existing knowledge. Examples:
-          * "한국의 의료보험 시스템의 장단점을 설명해주세요"
-          * "비자 신청 절차가 어떻게 되나요?"
-          * "세금 신고는 어떻게 해야 하나요?"
-        
-        - general: Simple questions, greetings, or casual conversation that don't require real-time data or complex analysis. Examples:
-          * "안녕하세요"
-          * "오늘 날씨 좋네요"
-          * "한국어로 '감사합니다'는 영어로 뭔가요?"
-        
-        Query: {query}
-        
-        Return only the type name (web_search, reasoning, or general).
-        """
+            Classify the following query into one of these query types:
+
+            - web_search: Questions about current events, recent trends, latest news, or real-time information that requires up-to-date data from the internet.
+                or Questions about peripheral information unrelated to the specific RAG types.
+                RAG types: visa_law, social_security, tax_finance, medical_health, employment, daily_life
+            Examples:
+            * "최근 한국의 IT 산업 동향은 어떤가요?"
+            * "요즘 가장 인기있는 앱은 무엇인가요?"
+            * "최신 기술 트렌드가 궁금해요"
+            * "최근 한국의 경제 발전 동향은 어떤가요?"
+
+            - reasoning: Questions that require **logical reasoning, comparison, inference, or step-by-step explanation**. These go beyond just explaining factual processes.
+            Examples:
+            * "한국의 의료보험 시스템의 장단점을 비교해주세요"
+            * "대한민국과 미국의 세율 체계를 비교하고 장단점을 분석해주세요"
+            * "최근 한국의 경제 발전 동향을 국제 정세와 연관지어 설명해주세요"
+
+            - general: Simple factual questions, greetings, or casual conversations. Also includes questions asking for basic explanations or definitions.
+            Examples:
+            * "안녕하세요"
+            * "한국어로 '감사합니다'는 영어로 뭐예요?"
+            * "비자 신청 절차를 알려주세요"
+            * "한국의 국민연금이 뭔가요?"
+            * "외국인도 건강보험에 가입할 수 있나요?"
+
+            Query: {query}
+
+            Return only the type name (web_search, reasoning, or general).
+            """
         
         try:
             response = await self.llm_client.generate(prompt)

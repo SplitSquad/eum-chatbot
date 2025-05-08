@@ -109,22 +109,40 @@ Please provide a helpful response based on your general knowledge about life in 
             logger.info("[응답 생성기] 추론 응답 생성 시작")
             
             # RAG 컨텍스트 가져오기
-            context = await self.rag_service.get_context(rag_type, query)
-            if not context:
-                logger.warning("[응답 생성기] RAG 컨텍스트가 없습니다.")
-                logger.info("[RESPONSE] No RAG context available for reasoning")
-                return "Sorry, no information could be found for this question."
-            else:
-                logger.debug(f"[RESPONSE] RAG context for reasoning: {context[:200]}...")
-            
-            # 프롬프트 생성
-            prompt = f"""The following is information about life in Korea for foreigners:
+            context = ""
+            if rag_type != RAGType.NONE:
+                context = await self.rag_service.get_context(rag_type, query)
+                if not context:
+                    logger.warning("[응답 생성기] RAG 컨텍스트가 없습니다.")
+                    logger.info("[RESPONSE] No RAG context available for reasoning")
+                    # RAG 컨텍스트가 없을 때도 일반 응답 생성
+                    prompt = f"""You are a helpful assistant for foreigners living in Korea. Please provide a thoughtful and well-reasoned response to the following question:
+
+Question: {query}
+
+Please provide a detailed response based on your general knowledge about life in Korea for foreigners. Include relevant considerations and explain your reasoning.
+Using chain-of-thought reasoning in your response.
+
+"""
+                else:
+                    logger.debug(f"[RESPONSE] RAG context for reasoning: {context[:200]}...")
+                    prompt = f"""The following is information about life in Korea for foreigners:
 
 {context}
 
 Question: {query}
 
 Please answer the question based on the information above. Provide a friendly and easy-to-understand response."""
+            else:
+                # RAG 타입이 NONE일 때의 프롬프트
+                prompt = f"""You are a helpful assistant for foreigners living in Korea. Please provide a thoughtful and well-reasoned response to the following question:
+
+Question: {query}
+
+Please provide a detailed response based on your general knowledge about life in Korea for foreigners. Include relevant considerations and explain your reasoning.
+Using chain-of-thought reasoning in your response.
+
+"""
             
             logger.debug(f"[RESPONSE] Reasoning prompt: {prompt[:200]}...")
             
@@ -188,11 +206,10 @@ Please answer the question based on the information above. Provide a friendly an
                 return "죄송합니다. 해당 질문에 대한 정보를 찾을 수 없습니다."
             
             # 프롬프트 생성
-            prompt = f"""다음 정보를 바탕으로 질문에 대한 포괄적인 답변을 제공해주세요:
+            prompt = f"""Please provide a comprehensive response based on the information above:
 
-웹 및 RAG 검색 결과: {context}
-
-질문: {query}"""
+Web search results: {context}
+query: {query}"""
             
             # 응답 생성 (Groq 고성능 모델 사용)
             logger.info(f"[응답 생성기] 웹 검색 응답 생성 시작 (타임아웃: {self.high_performance_llm.timeout}초)")
