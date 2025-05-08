@@ -1,149 +1,130 @@
 # EUM Chatbot
 
-이음 챗봇은 외국인을 위한 종합 정보 제공 챗봇 서비스입니다. 다양한 도메인의 전문 지식을 제공하며, RAG(Retrieval-Augmented Generation) 기술을 활용하여 정확하고 신뢰할 수 있는 정보를 제공합니다.
+한국에서 생활하는 외국인을 위한 챗봇 서비스입니다. 다양한 도메인의 정보를 제공하고, 다국어 지원을 통해 외국인들의 한국 생활을 돕습니다.
 
 ## 주요 기능
 
-- 다국어 지원 (한국어, 영어 등)
-- 도메인별 전문 지식 제공
-  - 비자/법률 (VISA_LAW)
-  - 사회보장제도 (SOCIAL_SECURITY)
-  - 세금/금융 (TAX_FINANCE)
-  - 의료/건강 (MEDICAL_HEALTH)
-  - 취업 (EMPLOYMENT)
-  - 일상생활 (DAILY_LIFE)
-- RAG 기반 정확한 정보 제공
-- 추론 기반 복잡한 질문 처리
+- **다국어 지원**: 한국어, 영어, 일본어, 중국어 등 다양한 언어 지원
+- **도메인별 정보 제공**:
+  - 비자/법률 (Visa/Law)
+  - 사회보장제도 (Social Security)
+  - 세금/금융 (Tax/Finance)
+  - 의료/건강 (Medical/Health)
+  - 취업 (Employment)
+  - 일상생활 (Daily Life)
+- **RAG 기반 응답**: 도메인별 벡터 데이터베이스를 활용한 정확한 정보 제공
+- **실시간 웹 검색**: 최신 정보 제공을 위한 웹 검색 기능
+
+## 기술 스택
+
+- **Backend**: FastAPI
+- **LLM**: Groq API (Gemma 3 12B)
+- **Vector DB**: ChromaDB
+- **Embedding**: Sentence Transformers (paraphrase-multilingual-mpnet-base-v2)
+- **Language Processing**: LangChain
+
+## 설치 방법
+
+1. 저장소 클론
+```bash
+git clone [repository-url]
+cd eum-chatbot
+```
+
+2. 가상환경 생성 및 활성화
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# or
+.\venv\Scripts\activate  # Windows
+```
+
+3. 의존성 설치
+```bash
+pip install -r requirements.txt
+```
+
+4. 환경 변수 설정
+```bash
+cp .env.example .env
+# .env 파일을 열어 필요한 API 키와 설정을 입력
+```
+
+## 실행 방법
+
+1. 서버 실행
+```bash
+PYTHONPATH=$PYTHONPATH:. uvicorn app.main:app --reload
+```
+
+2. API 엔드포인트
+- 챗봇 API: `POST /api/v1/chatbot`
+  ```json
+  {
+    "query": "한국에서 필요한 기본 서류는?",
+    "uid": "user_id"
+  }
+  ```
 
 ## 프로젝트 구조
 
 ```
 eum-chatbot/
 ├── app/
-│   ├── api/
-│   │   └── v1/
-│   │       └── chatbot.py      # 챗봇 API 엔드포인트
-│   ├── core/
-│   │   └── llm_client.py       # LLM 클라이언트
-│   ├── services/
-│   │   ├── chatbot/            # 챗봇 관련 서비스
-│   │   │   ├── chatbot.py
-│   │   │   ├── chatbot_classifier.py
-│   │   │   └── chatbot_rag_service.py
-│   │   └── common/             # 공통 서비스
-│   │       ├── preprocessor.py
-│   │       └── postprocessor.py
-│   ├── config/
-│   │   └── rag_config.py       # RAG 설정
-│   └── main.py                 # FastAPI 애플리케이션
-├── tests/                      # 테스트 코드
-├── logs/                       # 로그 파일
-├── .env                        # 환경 변수
-└── requirements.txt            # 의존성 목록
+│   ├── api/            # API 엔드포인트
+│   ├── config/         # 설정 파일
+│   ├── core/           # 핵심 기능
+│   ├── models/         # 데이터 모델
+│   ├── services/       # 비즈니스 로직
+│   │   ├── chatbot/    # 챗봇 관련 서비스
+│   │   └── common/     # 공통 서비스
+│   └── main.py         # 애플리케이션 진입점
+├── data/
+│   ├── chroma/         # ChromaDB 데이터
+│   └── vectorstore/    # 벡터 스토어 데이터
+├── logs/               # 로그 파일
+├── tests/              # 테스트 코드
+├── .env.example        # 환경 변수 예시
+├── requirements.txt    # 의존성 목록
+└── README.md          # 프로젝트 문서
 ```
 
-## 개발 환경 설정
+## 주요 서비스
 
-### 1. Python 환경 설정
+1. **ChatbotService**: 챗봇의 메인 서비스
+   - 질의 분류
+   - 응답 생성
+   - 다국어 처리
 
-```bash
-# 가상환경 생성
-python -m venv .venv
+2. **RAGService**: 도메인별 정보 검색
+   - 벡터 데이터베이스 관리
+   - 관련 문서 검색
+   - 컨텍스트 생성
 
-# 가상환경 활성화
-source .venv/bin/activate  # Linux/Mac
-# 또는
-.venv\Scripts\activate  # Windows
+3. **WebSearchService**: 실시간 웹 검색
+   - 최신 정보 검색
+   - 검색 결과 처리
 
-# 의존성 설치
-pip install -r requirements.txt
-```
+## 응답 생성 프로세스
 
-### 2. Ollama 설정
+1. **질의 분류**
+   - 질의 유형 분류 (일반, 추론, 웹 검색)
+   - RAG 도메인 분류
 
-Ollama는 LLM 모델을 로컬에서 실행하기 위한 도구입니다.
+2. **컨텍스트 생성**
+   - RAG 기반 관련 문서 검색
+   - 웹 검색 결과 수집 (필요시)
 
-```bash
-# Ollama 설치 (Mac)
-brew install ollama
+3. **응답 생성**
+   - Groq API를 사용한 응답 생성
+   - 다국어 번역 및 후처리
 
-# Ollama 서버 실행
-ollama serve
+## 로깅
 
-# 필요한 모델 다운로드
-ollama pull gemma3:1b  # 경량 모델
-ollama pull gemma3:12b  # 고성능 모델
-```
-
-### 3. 서버 실행
-
-```bash
-# 환경 변수 설정
-cp .env.example .env
-# .env 파일을 수정하여 필요한 설정을 입력
-
-# 서버 실행
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-## API 엔드포인트
-
-### 챗봇 API
-
-```
-POST /api/v1/chatbot
-Content-Type: application/json
-
-{
-    "query": "건강보험 자격 취득은 어떻게 하나요?",
-    "uid": "user_id"
-}
-```
-
-## 코드 컨벤션
-
-### 1. 디렉토리 구조
-- `app/`: 애플리케이션 코드
-  - `api/`: API 엔드포인트
-  - `core/`: 핵심 기능
-  - `services/`: 비즈니스 로직
-    - `chatbot/`: 챗봇 관련 서비스
-    - `common/`: 공통 서비스
-  - `config/`: 설정 파일
-
-### 2. 파일 명명 규칙
-- Python 파일: snake_case.py
-- 클래스: PascalCase
-- 함수/변수: snake_case
-- 상수: UPPER_SNAKE_CASE
-
-### 3. 코드 스타일
-- PEP 8 준수
-- 타입 힌트 사용
-- docstring 작성
-- 로깅 활용
-
-### 4. 로깅
-- `loguru` 라이브러리 사용
-- 로그 레벨: DEBUG, INFO, WARNING, ERROR
-- 로그 포맷: `[모듈명] 메시지`
-
-## 테스트
-
-```bash
-# 테스트 실행
-pytest tests/
-```
-
-## 서버 실행 방법
-
-```bash
-# 백그라운드 실행
-
-
-# 서버 종료
-ps aux | grep uvicorn      # 실행 중인 프로세스 확인
-kill -9 [PID]              # 프로세스 종료
-```
-
-서버 실행 중 로그는 `logs/` 디렉토리에서 확인할 수 있습니다.
+- 로그 파일 위치: `logs/app.log`
+- 로그 레벨: INFO, ERROR
+- 주요 로그 카테고리:
+  - [WORKFLOW]: 전체 워크플로우 로그
+  - [RESPONSE]: 응답 생성 관련 로그
+  - [RAG]: RAG 관련 로그
+  - [POSTPROCESS]: 후처리 관련 로그

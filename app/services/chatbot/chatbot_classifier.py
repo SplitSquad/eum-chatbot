@@ -73,6 +73,7 @@ class ChatbotClassifier:
             * "한국의 의료보험 시스템의 장단점을 비교해주세요"
             * "대한민국과 미국의 세율 체계를 비교하고 장단점을 분석해주세요"
             * "최근 한국의 경제 발전 동향을 국제 정세와 연관지어 설명해주세요"
+            * "페아노 공리계를 사용하지 않는 방법으로 1+1=2를 증명해주세요"
 
             - general: Simple factual questions, greetings, or casual conversations. Also includes questions asking for basic explanations or definitions.
             Examples:
