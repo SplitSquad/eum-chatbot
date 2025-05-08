@@ -67,7 +67,15 @@ class ChatbotResponseGenerator:
                     logger.info("[RESPONSE] No RAG context available")
             
             # 프롬프트 생성
-            prompt = self._generate_prompt(query, context)
+            if rag_type == RAGType.NONE:
+                prompt = f"""You are a helpful assistant for foreigners living in Korea. Please provide a friendly and informative response to the following question:
+
+Question: {query}
+
+Please provide a helpful response based on your general knowledge about life in Korea for foreigners."""
+            else:
+                prompt = self._generate_prompt(query, context)
+            
             logger.info("[응답 생성기] 프롬프트 생성 완료")
             logger.debug(f"[RESPONSE] Generated prompt: {prompt}")
             
