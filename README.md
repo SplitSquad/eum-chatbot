@@ -18,7 +18,7 @@
 ## 기술 스택
 
 - **Backend**: FastAPI
-- **LLM**: Groq API (Gemma 3 12B)
+- **LLM**: Groq API (Gemma 3 12B), OpenAI API
 - **Vector DB**: ChromaDB
 - **Embedding**: Sentence Transformers (paraphrase-multilingual-mpnet-base-v2)
 - **Language Processing**: LangChain
