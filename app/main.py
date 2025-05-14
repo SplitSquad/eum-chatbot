@@ -39,7 +39,7 @@ app.include_router(chatbot.router, prefix="/api/v1")
 async def startup_event():
     logger.info("[WORKFLOW] Server started successfully")
     await eureka_client.init_async(
-        eureka_server=settings.EUREKA_SERVER_URL,
+        eureka_server=settings.EUREKA_IP,
         app_name=settings.EUREKA_APP_NAME,
         instance_host=settings.EUREKA_INSTANCE_HOST,
         instance_port=settings.EUREKA_INSTANCE_PORT
