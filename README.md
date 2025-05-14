@@ -128,3 +128,6 @@ eum-chatbot/
   - [RESPONSE]: 응답 생성 관련 로그
   - [RAG]: RAG 관련 로그
   - [POSTPROCESS]: 후처리 관련 로그
+
+  ## 배포 관련
+- DockerFile 추가
