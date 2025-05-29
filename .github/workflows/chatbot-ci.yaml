@@ -85,8 +85,8 @@ jobs:
           echo "매니페스트 레포지토리 디렉토리 구조:"
           ls -la manifest-repo
           
-          # helm-charts 디렉토리로 이동 및 values.yaml 파일 업데이트
-          cd manifest-repo/helm-charts || { echo "helm-charts 디렉토리가 없습니다"; exit 1; }
+          # eum-ai Helm 차트 디렉토리로 이동
+          cd manifest-repo/helm-charts/eum-ai || { echo "helm-charts/eum-ai 디렉토리가 없습니다"; exit 1; }
           
           # values.yaml 파일이 있는지 확인하고 이미지 태그 업데이트
           if [ -f "values.yaml" ]; then
@@ -97,15 +97,18 @@ jobs:
             
             echo "업데이트된 이미지 설정:"
             yq eval ".image" values.yaml
+            
+            # 변경사항 커밋 및 푸시를 위해 루트 디렉토리로 이동
+            cd ../../..
           else
-            echo "ERROR: values.yaml 파일이 없습니다!"
+            echo "ERROR: values.yaml 파일을 찾을 수 없습니다!"
+            echo "현재 디렉토리: $(pwd)"
             echo "디렉토리 내용:"
             ls -la
             exit 1
           fi
           
           # 변경사항 커밋 및 푸시
-          cd ..  # 매니페스트 레포지토리 루트로 이동
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add .
