@@ -5,12 +5,16 @@ from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 from app.config.rag_config import RAGConfig
 from app.services.chatbot.chatbot_classifier import RAGType
+import os
 
 class RAGService:
     """RAG 서비스"""
     
     def __init__(self):
         self.config = RAGConfig()
+        # 벡터 스토어 경로 검증
+        self.config.validate_paths()
+        
         self.embeddings = SentenceTransformer(self.config.EMBEDDING_MODEL)
         logger.info(f"[RAG] 임베딩 모델 사용: {self.config.EMBEDDING_MODEL}")
         
@@ -18,28 +22,90 @@ class RAGService:
         self.clients: Dict[RAGType, chromadb.PersistentClient] = {}
         self.collections: Dict[RAGType, chromadb.Collection] = {}
         
+        # 벡터 스토어 검증 및 초기화
+        self._validate_and_initialize_vectorstores()
+    
+    def _validate_and_initialize_vectorstores(self) -> None:
+        """벡터 스토어를 검증하고 초기화합니다."""
         for rag_type, config in self.config.DOMAIN_CONFIGS.items():
             try:
-                # 도메인별 ChromaDB 클라이언트 생성
+                # 벡터 스토어 경로 검증
+                vectorstore_path = config["vectorstore_path"]
+                if not os.path.exists(vectorstore_path):
+                    logger.warning(f"[RAG] {rag_type.value} 도메인의 벡터 스토어 경로가 존재하지 않습니다: {vectorstore_path}")
+                    os.makedirs(vectorstore_path, exist_ok=True)
+                    logger.info(f"[RAG] {rag_type.value} 도메인의 벡터 스토어 디렉토리를 생성했습니다: {vectorstore_path}")
+                
+                # ChromaDB 클라이언트 생성
                 client = chromadb.PersistentClient(
-                    path=config["vectorstore_path"],
+                    path=vectorstore_path,
                     settings=Settings(allow_reset=True)
                 )
                 self.clients[rag_type] = client
                 
-                # 도메인별 컬렉션 초기화
+                # 컬렉션 초기화 및 검증
                 try:
-                    self.collections[rag_type] = client.get_collection(config["collection_name"])
-                    # 컬렉션 정보 로깅
-                    count = self.collections[rag_type].count()
-                    logger.info(f"[RAG] {rag_type.value} 도메인 컬렉션 로드 완료: {count}개의 문서")
+                    collection = client.get_collection(config["collection_name"])
+                    count = collection.count()
+                    
+                    if count == 0:
+                        logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션이 비어있습니다.")
+                    else:
+                        logger.info(f"[RAG] {rag_type.value} 도메인 컬렉션 로드 완료: {count}개의 문서")
+                    
+                    # 컬렉션 메타데이터 검증
+                    metadata = collection.metadata
+                    if not metadata:
+                        logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션의 메타데이터가 없습니다.")
+                    
+                    self.collections[rag_type] = collection
+                    
                 except ValueError:
                     logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션이 존재하지 않습니다.")
-                    self.collections[rag_type] = client.create_collection(config["collection_name"])
+                    self.collections[rag_type] = client.create_collection(
+                        name=config["collection_name"],
+                        metadata={"domain": rag_type.value}
+                    )
+                    logger.info(f"[RAG] {rag_type.value} 도메인 컬렉션을 생성했습니다.")
                 
-                logger.info(f"[RAG] {rag_type.value} 도메인 초기화 완료: {config['vectorstore_path']}")
+                logger.info(f"[RAG] {rag_type.value} 도메인 초기화 완료: {vectorstore_path}")
+                
             except Exception as e:
                 logger.error(f"[RAG] {rag_type.value} 도메인 초기화 중 오류 발생: {str(e)}")
+                raise
+    
+    def _validate_collection(self, rag_type: RAGType) -> bool:
+        """
+        특정 도메인의 컬렉션이 유효한지 검증합니다.
+        
+        Args:
+            rag_type: RAG 유형
+            
+        Returns:
+            bool: 컬렉션이 유효하면 True, 아니면 False
+        """
+        try:
+            if rag_type not in self.collections:
+                logger.error(f"[RAG] {rag_type.value} 도메인 컬렉션이 존재하지 않습니다.")
+                return False
+            
+            collection = self.collections[rag_type]
+            count = collection.count()
+            
+            if count == 0:
+                logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션이 비어있습니다.")
+                return False
+            
+            # 컬렉션의 임베딩 차원 검증
+            metadata = collection.metadata
+            if not metadata or "embedding_dimension" not in metadata:
+                logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션의 임베딩 차원 정보가 없습니다.")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"[RAG] {rag_type.value} 도메인 컬렉션 검증 중 오류 발생: {str(e)}")
+            return False
     
     def add_documents(self, rag_type: RAGType, documents: List[str]) -> None:
         """
@@ -84,15 +150,9 @@ class RAGService:
         try:
             logger.info(f"[RAG] {rag_type.value} 도메인에서 문서 검색 시작: {query}")
             
-            # 컬렉션 존재 여부 확인
-            if rag_type not in self.collections:
-                logger.error(f"[RAG] {rag_type.value} 도메인 컬렉션이 존재하지 않습니다.")
-                return []
-            
-            # 컬렉션 문서 수 확인
-            count = self.collections[rag_type].count()
-            if count == 0:
-                logger.warning(f"[RAG] {rag_type.value} 도메인에 문서가 없습니다.")
+            # 컬렉션 검증
+            if not self._validate_collection(rag_type):
+                logger.error(f"[RAG] {rag_type.value} 도메인 컬렉션이 유효하지 않습니다.")
                 return []
             
             # 질의 임베딩 생성
