@@ -31,10 +31,19 @@ class RAGService:
             try:
                 # 벡터 스토어 경로 검증
                 vectorstore_path = config["vectorstore_path"]
+                logger.info(f"[RAG] {rag_type.value} 도메인 벡터 스토어 경로: {vectorstore_path}")
+                
                 if not os.path.exists(vectorstore_path):
                     logger.warning(f"[RAG] {rag_type.value} 도메인의 벡터 스토어 경로가 존재하지 않습니다: {vectorstore_path}")
                     os.makedirs(vectorstore_path, exist_ok=True)
                     logger.info(f"[RAG] {rag_type.value} 도메인의 벡터 스토어 디렉토리를 생성했습니다: {vectorstore_path}")
+                
+                # ChromaDB 파일 확인
+                chroma_db_file = os.path.join(vectorstore_path, "chroma.sqlite3")
+                if os.path.exists(chroma_db_file):
+                    logger.info(f"[RAG] {rag_type.value} 도메인의 ChromaDB 파일 크기: {os.path.getsize(chroma_db_file)} bytes")
+                else:
+                    logger.warning(f"[RAG] {rag_type.value} 도메인의 ChromaDB 파일이 존재하지 않습니다: {chroma_db_file}")
                 
                 # ChromaDB 클라이언트 생성
                 client = chromadb.PersistentClient(
@@ -52,11 +61,19 @@ class RAGService:
                         logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션이 비어있습니다.")
                     else:
                         logger.info(f"[RAG] {rag_type.value} 도메인 컬렉션 로드 완료: {count}개의 문서")
+                        # 컬렉션의 첫 번째 문서 샘플 확인
+                        try:
+                            sample = collection.peek(limit=1)
+                            logger.info(f"[RAG] {rag_type.value} 도메인 컬렉션 샘플: {sample}")
+                        except Exception as e:
+                            logger.error(f"[RAG] {rag_type.value} 도메인 컬렉션 샘플 조회 실패: {str(e)}")
                     
                     # 컬렉션 메타데이터 검증
                     metadata = collection.metadata
                     if not metadata:
                         logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션의 메타데이터가 없습니다.")
+                    else:
+                        logger.info(f"[RAG] {rag_type.value} 도메인 컬렉션 메타데이터: {metadata}")
                     
                     self.collections[rag_type] = collection
                     
