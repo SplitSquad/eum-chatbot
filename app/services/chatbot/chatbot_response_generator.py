@@ -111,7 +111,7 @@ Please provide a helpful response based on your general knowledge about life in 
             # RAG 컨텍스트 가져오기
             context = ""
             if rag_type != RAGType.NONE:
-                context = await self.rag_service.get_context(rag_type, query)
+                context = await self.rag_service.search(rag_type, query)
                 if not context:
                     logger.warning("[응답 생성기] RAG 컨텍스트가 없습니다.")
                     logger.info("[RESPONSE] No RAG context available for reasoning")
