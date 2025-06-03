@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 from loguru import logger
 import chromadb
 from chromadb.config import Settings
@@ -79,9 +79,14 @@ class RAGService:
                     
                 except ValueError:
                     logger.warning(f"[RAG] {rag_type.value} 도메인 컬렉션이 존재하지 않습니다.")
+                    # 임베딩 차원을 명시적으로 지정하여 컬렉션 생성
                     self.collections[rag_type] = client.create_collection(
                         name=config["collection_name"],
-                        metadata={"domain": rag_type.value}
+                        metadata={
+                            "domain": rag_type.value,
+                            "embedding_dimension": 768,  # sentence-transformers/paraphrase-multilingual-mpnet-base-v2 모델의 차원
+                            "embedding_model": self.config.EMBEDDING_MODEL
+                        }
                     )
                     logger.info(f"[RAG] {rag_type.value} 도메인 컬렉션을 생성했습니다.")
                 
@@ -153,16 +158,17 @@ class RAGService:
             logger.error(f"문서 추가 중 오류 발생: {str(e)}")
             raise
     
-    async def search(self, rag_type: RAGType, query: str) -> List[str]:
+    async def search(self, rag_type: RAGType, query: str, format_as_context: bool = False) -> Union[List[str], str]:
         """
         특정 도메인에서 질의와 관련된 문서를 검색합니다.
         
         Args:
             rag_type: RAG 유형
             query: 검색 질의
+            format_as_context: True일 경우 검색 결과를 컨텍스트 문자열로 반환
             
         Returns:
-            List[str]: 검색된 문서 리스트
+            Union[List[str], str]: 검색된 문서 리스트 또는 컨텍스트 문자열
         """
         try:
             logger.info(f"[RAG] {rag_type.value} 도메인에서 문서 검색 시작: {query}")
@@ -170,7 +176,7 @@ class RAGService:
             # 컬렉션 검증
             if not self._validate_collection(rag_type):
                 logger.error(f"[RAG] {rag_type.value} 도메인 컬렉션이 유효하지 않습니다.")
-                return []
+                return [] if not format_as_context else ""
             
             # 질의 임베딩 생성
             query_embedding = self.embeddings.encode([query])[0]
@@ -178,7 +184,8 @@ class RAGService:
             # 유사도 검색
             results = self.collections[rag_type].query(
                 query_embeddings=[query_embedding.tolist()],
-                n_results=self.config.SEARCH_K
+                n_results=self.config.SEARCH_K,
+                include=["documents", "distances", "metadatas"]
             )
             
             # 검색 결과 로깅
@@ -186,17 +193,30 @@ class RAGService:
             for i, (doc, score) in enumerate(zip(results['documents'][0], results['distances'][0])):
                 logger.info(f"[RAG] 문서 {i+1} (유사도: {score:.4f}): {doc[:100]}...")
             
-            # 임계값 이상의 문서만 반환
+            # 임계값 이상의 문서만 반환 (임계값을 0.2로 낮춤)
             filtered_docs = []
             for doc, score in zip(results['documents'][0], results['distances'][0]):
-                if score >= self.config.SEARCH_THRESHOLD:
+                if score >= 0.2:  # 임계값을 0.2로 낮춤
                     filtered_docs.append(doc)
             
+            if not filtered_docs:
+                logger.warning(f"[RAG] {rag_type.value} 도메인에서 임계값({0.2}) 이상의 문서가 없습니다.")
+                # 임계값을 만족하는 문서가 없으면 상위 2개 문서 반환
+                filtered_docs = results['documents'][0][:2]
+            
             logger.info(f"[RAG] {rag_type.value} 도메인에서 {len(filtered_docs)}개의 문서가 검색되었습니다.")
+            
+            # 컨텍스트 형식으로 반환
+            if format_as_context:
+                context = "\n\n".join(filtered_docs)
+                logger.info(f"[RAG] 컨텍스트 생성 완료: {len(context)}자")
+                return context
+            
             return filtered_docs
+            
         except Exception as e:
             logger.error(f"문서 검색 중 오류 발생: {str(e)}")
-            return []
+            return [] if not format_as_context else ""
     
     async def get_context(self, rag_type: RAGType, query: str) -> str:
         """
@@ -209,26 +229,4 @@ class RAGService:
         Returns:
             str: 생성된 컨텍스트
         """
-        try:
-            logger.info(f"[RAG] {rag_type.value} 유형에서 컨텍스트 생성 시작")
-            
-            if rag_type == RAGType.NONE:
-                logger.info("[RAG] RAG 유형이 NONE이므로 컨텍스트를 생성하지 않습니다.")
-                return ""
-            
-            # 관련 문서 검색
-            docs = await self.search(rag_type, query)
-            
-            if not docs:
-                logger.info("[RAG] 관련 문서가 없습니다.")
-                return ""
-            
-            # 컨텍스트 생성
-            context = "\n\n".join(docs)
-            logger.info(f"[RAG] 컨텍스트 생성 완료: {len(context)}자")
-            logger.debug(f"[RAG] 생성된 컨텍스트: {context[:200]}...")
-            
-            return context
-        except Exception as e:
-            logger.error(f"컨텍스트 생성 중 오류 발생: {str(e)}")
-            return "" 
+        return await self.search(rag_type, query, format_as_context=True) 

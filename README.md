@@ -33,10 +33,10 @@ cd eum-chatbot
 
 2. 가상환경 생성 및 활성화
 ```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
 # or
-.\venv\Scripts\activate  # Windows
+.\.venv\Scripts\activate  # Windows
 ```
 
 3. 의존성 설치
@@ -82,11 +82,13 @@ eum-chatbot/
 ├── data/
 │   ├── chroma/         # ChromaDB 데이터
 │   └── vectorstore/    # 벡터 스토어 데이터
-├── logs/               # 로그 파일
-├── tests/              # 테스트 코드
-├── .env.example        # 환경 변수 예시
-├── requirements.txt    # 의존성 목록
-└── README.md          # 프로젝트 문서
+├── logs/              # 로그 파일
+├── tests/             # 테스트 코드
+├── .github/           # GitHub 관련 설정
+├── .venv/             # Python 가상환경
+├── Dockerfile         # Docker 설정
+├── requirements.txt   # 의존성 목록
+└── README.md         # 프로젝트 문서
 ```
 
 ## 주요 서비스
@@ -129,5 +131,7 @@ eum-chatbot/
   - [RAG]: RAG 관련 로그
   - [POSTPROCESS]: 후처리 관련 로그
 
-  ## 배포 관련
-- DockerFile 추가
+## 배포
+
+- Docker를 통한 컨테이너화 지원
+- GitHub Actions를 통한 CI/CD 파이프라인 구성
