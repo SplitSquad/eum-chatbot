@@ -16,7 +16,7 @@ class RAGDomain(str, Enum):
 class RAGConfig(BaseModel):
     """RAG 설정"""
     # 기본 설정
-    BASE_DIR: ClassVar[str] = str(Path(__file__).parent.parent.parent)  # 프로젝트 루트 디렉토리
+    BASE_DIR: ClassVar[str] = os.getenv("BASE_DIR", str(Path(__file__).parent.parent.parent))
     CHROMA_DB_PATH: ClassVar[str] = os.path.join(BASE_DIR, "data", "chroma")
     EMBEDDING_MODEL: ClassVar[str] = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"  # 768차원 모델로 변경
     SEARCH_K: ClassVar[int] = 5  # 검색 결과 수
